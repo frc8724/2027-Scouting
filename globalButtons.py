@@ -17,12 +17,14 @@ menuNumber = 1
 # 2 = auto period
 class Button:
     def __init__(self, text, x, y, width, height, color, function, fontType, rounding):
+        #def variables
         self.rect = pygame.Rect(x, y, width, height)
         self.text = text
         self.color = color
         self.function = function
         self.rounding = rounding
 
+        #initialize font system
         if fontType == 1:
             self.textRender = smallFont.render(text, True, (0, 0, 0))
         elif fontType == 2:
@@ -44,13 +46,79 @@ class Button:
         self.textRender2 = self.textRender.get_rect(center=self.rect.center)
 
     def draw(self, surface):
+        #put the button on the screen
         pygame.draw.rect(surface, self.color, self.rect, border_radius=self.rounding)
         surface.blit(self.textRender, self.textRender2)
 
     def isClicked(self, event):
+        #see if it is clicked
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.rect.collidepoint(event.pos):
                 self.function()
+
+class Dropdown:
+    def __init__(self, text, x, y, width, height, color, function, fontType, rounding, dropdownAmount):
+        #variables
+        self.text = text
+        self.color = color
+        self.function = function
+        self.rounding = rounding
+        self.amount = dropdownAmount
+        self.width = width
+        self.height = height
+        self.x = x
+        self.y = y
+        self.font = fontType
+        self.dropped = 0
+
+    def initDropped(self):
+        #necessary for my spaghetti code to work
+        #call before drawing dropdown
+        global dropped
+        dropped = 0
+
+    def draw(self, surface):
+        for z in range (0, self.amount+0):
+            global rect
+            print(self.dropped)
+            if self.dropped == 1:
+                #draw many buttons
+                rect = pygame.Rect(self.x, self.y+self.height*z, self.width, self.height)
+            else:
+                #draw just the one button
+                rect = pygame.Rect(self.x, self.y, self.width, self.height)
+            #FOOOOOOOOONTSSSS
+            if self.font == 1:
+                self.textRender = smallFont.render(self.text, True, (0, 0, 0))
+            elif self.font == 2:
+                self.textRender = bigFont.render(self.text, True, (0, 0, 0))
+            elif self.font == 3:
+                self.textRender = hugeFont.render(self.text, True, (0, 0, 0))
+            elif self.font == 4:
+                self.textRender = smallFont.render(self.text, True, (255, 255, 255))
+            elif self.font == 5:
+                self.textRender = bigFont.render(self.text, True, (255, 255, 255))
+            elif self.font == 6:
+                self.textRender = hugeFont.render(self.text, True, (255, 255, 255))
+            elif self.font == 7:
+                self.textRender = boldFont.render(self.text, True, (0, 0, 0))
+            elif self.font == 8:
+                self.textRender = boldFont.render(self.text, True, (255, 255, 255))
+            else:
+                self.textRender = bigFont.render(self.text, True, (0, 0, 0))
+            self.textRender2 = self.textRender.get_rect(center=rect.center)
+            pygame.draw.rect(surface, self.color, rect, border_radius=self.rounding)
+            surface.blit(self.textRender, self.textRender2)
+
+    def isClicked(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if rect.collidepoint(event.pos):
+                if self.dropped == 0:
+                  self.dropped = 1
+                  print('should be dropped down')
+                elif self.dropped == 1:
+                  self.dropped = 0
+                  print('should be dropped up')
 
 def exitButton():
     pygame.quit()
@@ -62,14 +130,22 @@ def startMatchButton():
 
 def drawMainMenu(closeX, closeY, closeW, closeH, startX, startY, startW, startH, logoW, logoH):
     global closeButton
+    global dropTest
     logo = pygame.image.load("assets/logo.png")
-    closeButton = Button(text="Close", x = closeX, y = closeY, width = closeW, height = closeH, color = (255, 0, 0), function = exitButton, fontType = 4, rounding = 15)
+    closeButton = Button(text="Close", x = closeX, y = closeY, width = closeW, height = closeH, color = (255, 0, 0), function = exitButton, fontType = 1, rounding = 15)
     startButton = Button(text="Start Match", x = startX, y = startY, width = startW, height = startH, color = (100, 100, 255), function = startMatchButton, fontType = 3, rounding = 50)
     for event in pygame.event.get():
         closeButton.isClicked(event)
         startButton.isClicked(event)
+        dropTest.isClicked(event)
 
     screen.fill((100, 100, 100))
     closeButton.draw(screen)
     startButton.draw(screen)
+    dropTest.draw(screen)
     screen.blit(pygame.transform.scale(logo, (logoW, logoH)), (0, 0))
+
+def initDrops():
+    global dropTest
+    dropTest = Dropdown(text="Test", x = 100, y = 200, width = 100, height = 50, color = (0, 255, 0), function = exitButton, fontType = 2, rounding = 5, dropdownAmount = 5)
+    dropTest.initDropped()
