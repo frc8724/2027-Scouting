@@ -57,19 +57,21 @@ class Button:
                 self.function()
 
 class Dropdown:
-    def __init__(self, text, x, y, width, height, color, function, fontType, rounding, dropdownAmount):
+    def __init__(self, text, x, y, width, height, color, function, fontType, dropFont, rounding, dropdownAmount, textList):
         #variables
         self.text = text
         self.color = color
         self.function = function
         self.rounding = rounding
-        self.amount = dropdownAmount
+        self.amount = dropdownAmount+1
         self.width = width
         self.height = height
         self.x = x
         self.y = y
         self.font = fontType
+        self.dropFont = dropFont
         self.dropped = 0
+        self.list = textList
 
     def initDropped(self):
         #necessary for my spaghetti code to work
@@ -80,39 +82,63 @@ class Dropdown:
     def draw(self, surface):
         for z in range (0, self.amount+0):
             global rect
-            print(self.dropped)
             if self.dropped == 1:
                 #draw many buttons
-                rect = pygame.Rect(self.x, self.y+self.height*z, self.width, self.height)
+                rect = pygame.Rect(self.x, self.y, self.width, self.height)
+                dropRect = pygame.Rect(self.x, self.y+self.height*z, self.width, self.height)
             else:
                 #draw just the one button
                 rect = pygame.Rect(self.x, self.y, self.width, self.height)
             #FOOOOOOOOONTSSSS
             if self.font == 1:
-                self.textRender = smallFont.render(self.text, True, (0, 0, 0))
+                self.textRenderOG = smallFont.render(self.text, True, (0, 0, 0))
             elif self.font == 2:
-                self.textRender = bigFont.render(self.text, True, (0, 0, 0))
+                self.textRenderOG = bigFont.render(self.text, True, (0, 0, 0))
             elif self.font == 3:
-                self.textRender = hugeFont.render(self.text, True, (0, 0, 0))
+                self.textRenderOG = hugeFont.render(self.text, True, (0, 0, 0))
             elif self.font == 4:
-                self.textRender = smallFont.render(self.text, True, (255, 255, 255))
+                self.textRenderOG = smallFont.render(self.text, True, (255, 255, 255))
             elif self.font == 5:
-                self.textRender = bigFont.render(self.text, True, (255, 255, 255))
+                self.textRenderOG = bigFont.render(self.text, True, (255, 255, 255))
             elif self.font == 6:
-                self.textRender = hugeFont.render(self.text, True, (255, 255, 255))
+                self.textRenderOG = hugeFont.render(self.text, True, (255, 255, 255))
             elif self.font == 7:
-                self.textRender = boldFont.render(self.text, True, (0, 0, 0))
+                self.textRenderOG = boldFont.render(self.text, True, (0, 0, 0))
             elif self.font == 8:
-                self.textRender = boldFont.render(self.text, True, (255, 255, 255))
+                self.textRenderOG = boldFont.render(self.text, True, (255, 255, 255))
             else:
-                self.textRender = bigFont.render(self.text, True, (0, 0, 0))
-            self.textRender2 = self.textRender.get_rect(center=rect.center)
+                self.textRenderOG = bigFont.render(self.text, True, (0, 0, 0))
+            if self.dropFont == 1:
+                self.textRenderDrop = smallFont.render(self.list[z-1], True, (0, 0, 0))
+            elif self.dropFont == 2:
+                self.textRenderDrop = bigFont.render(self.list[z-1], True, (0, 0, 0))
+            elif self.dropFont == 3:
+                self.textRenderDrop = hugeFont.render(self.list[z-1], True, (0, 0, 0))
+            elif self.dropFont == 4:
+                self.textRenderDrop = smallFont.render(self.list[z-1], True, (255, 255, 255))
+            elif self.dropFont == 5:
+                self.textRenderDrop = bigFont.render(self.list[z-1], True, (255, 255, 255))
+            elif self.dropFont == 6:
+                self.textRenderDrop = hugeFont.render(self.list[z-1], True, (255, 255, 255))
+            elif self.dropFont == 7:
+                self.textRenderDrop = boldFont.render(self.list[z-1], True, (0, 0, 0))
+            elif self.dropFont == 8:
+                self.textRenderDrop = boldFont.render(self.list[z-1], True, (255, 255, 255))
+            else:
+                self.textRenderDrop = bigFont.render(self.list[z-1], True, (0, 0, 0))
+            self.textRender2 = self.textRenderOG.get_rect(center=rect.center)
             pygame.draw.rect(surface, self.color, rect, border_radius=self.rounding)
-            surface.blit(self.textRender, self.textRender2)
+            surface.blit(self.textRenderOG, self.textRender2)
+            if self.dropped == 1:
+                #separate fonts on the dropped vs. undropped boxes
+                self.textRender3 = self.textRenderDrop.get_rect(center=dropRect.center)
+                pygame.draw.rect(surface, self.color, dropRect, border_radius=self.rounding)
+                surface.blit(self.textRenderDrop, self.textRender3)
 
     def isClicked(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if rect.collidepoint(event.pos):
+                #click events
                 if self.dropped == 0:
                   self.dropped = 1
                   print('should be dropped down')
@@ -121,14 +147,18 @@ class Dropdown:
                   print('should be dropped up')
 
 def exitButton():
+    #bye
     pygame.quit()
     sys.exit()
 
 def startMatchButton():
+    #non functional currently
     print("match started")
     menuNumber = 2
-
+#test code
+testDropList = ["mary", "had", "a", "little", "lamb"]
 def drawMainMenu(closeX, closeY, closeW, closeH, startX, startY, startW, startH, logoW, logoH):
+    #infinite parameters
     global closeButton
     global dropTest
     logo = pygame.image.load("assets/logo.png")
@@ -138,7 +168,7 @@ def drawMainMenu(closeX, closeY, closeW, closeH, startX, startY, startW, startH,
         closeButton.isClicked(event)
         startButton.isClicked(event)
         dropTest.isClicked(event)
-
+    #draw the things
     screen.fill((100, 100, 100))
     closeButton.draw(screen)
     startButton.draw(screen)
@@ -146,6 +176,7 @@ def drawMainMenu(closeX, closeY, closeW, closeH, startX, startY, startW, startH,
     screen.blit(pygame.transform.scale(logo, (logoW, logoH)), (0, 0))
 
 def initDrops():
+    #dont ask why it's necessary just call it in the GUI code
     global dropTest
-    dropTest = Dropdown(text="Test", x = 100, y = 200, width = 100, height = 50, color = (0, 255, 0), function = exitButton, fontType = 2, rounding = 5, dropdownAmount = 5)
+    dropTest = Dropdown(text="Test", x = 100, y = 200, width = 100, height = 50, color = (0, 255, 0), function = exitButton, fontType = 2, dropFont = 1, rounding = 5, dropdownAmount = 5, textList = testDropList)
     dropTest.initDropped()
