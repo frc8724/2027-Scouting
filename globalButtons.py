@@ -19,6 +19,8 @@ menuNumber = 1
 # 2 = auto period
 global dropRect
 dropRect = {}
+global rect
+rect = {}
 class Button:
     def __init__(self, text, x, y, width, height, color, function, fontType, rounding):
         #def variables
@@ -89,11 +91,11 @@ class Dropdown:
             global rect
             if self.dropped == 1:
                 #draw many buttons
-                rect = pygame.Rect(self.x, self.y, self.width, self.height)
+                rect[self.text] = pygame.Rect(self.x, self.y, self.width, self.height)
                 dropRect[self.text][self.list[z-1]] = pygame.Rect(self.x, self.y+self.height*z, self.width, self.height)
             else:
                 #draw just the one button
-                rect = pygame.Rect(self.x, self.y, self.width, self.height)
+                rect[self.text] = pygame.Rect(self.x, self.y, self.width, self.height)
             #FOOOOOOOOONTSSSS
             if self.font == 1:
                 self.textRenderOG = smallFont.render(self.text, True, (0, 0, 0))
@@ -132,8 +134,8 @@ class Dropdown:
             else:
                 self.textRenderDrop = bigFont.render(self.list[z-1], True, (0, 0, 0))
             #self.render the text and draw the boxes
-            self.textRender2 = self.textRenderOG.get_rect(center=rect.center)
-            pygame.draw.rect(surface, self.color, rect, border_radius=self.rounding)
+            self.textRender2 = self.textRenderOG.get_rect(center=rect[self.text].center)
+            pygame.draw.rect(surface, self.color, rect[self.text], border_radius=self.rounding)
             surface.blit(self.textRenderOG, self.textRender2)
             if self.dropped == 1:
                 #separate fonts on the dropped vs. undropped boxes
@@ -141,13 +143,14 @@ class Dropdown:
                 pygame.draw.rect(surface, self.color, dropRect[self.text][self.list[z-1]], border_radius=self.rounding)
                 surface.blit(self.textRenderDrop, self.textRender3)
                 if self.event.type == pygame.MOUSEBUTTONDOWN and self.event.button == 1:
+                    #check click events for the dropped boxes
                     if dropRect[self.text][self.amount].collidepoint(self.event.pos):
                         self.function()
 
     def isClicked(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            if rect.collidepoint(event.pos):
-                #click events
+            if rect[self.text].collidepoint(event.pos):
+                #click events (only for the main button, not the dropped ones)
                 if self.dropped == 0:
                   self.dropped = 1
                   print('should be dropped down')
@@ -158,10 +161,12 @@ class Dropdown:
             if self.dropped == 1:
                 for z in range(0, self.amount):
                     global dropRect
+                    #global it yet again and redefine it so both pieces of code can work
                     dropRect[self.text] = {}
                     dropRect[self.text][self.list[z-1]] = pygame.Rect(self.x, self.y+self.height*z, self.width, self.height)
                     if dropRect[self.text][self.list[z-1]].collidepoint(event.pos):
                         self.function()
+                        #requires break to not repeatedly call the function on hold
                         break
 
 def exitButton():
@@ -175,30 +180,36 @@ def startMatchButton():
     menuNumber = 2
 
 def matchSelector():
-    print(dropRect)
+    #temp code
     print(f"text: {' '.join(dropRect["Match"])}")
 
 def matchBatchSelector():
     global selectedBatch
+    # updates batch of matches shown on the dropdown
     if ' '.join(dropRect["Match Chunk"]) == 'do not select':
+        #required to work
         pass
     else:
+        # updates the batch
         selectedBatch = int(' '.join(dropRect["Match Chunk"]))
         print(selectedBatch)
 
 def teamSelector():
-    print(dropRect)
+    # temp code
     print(f"text: {' '.join(dropRect["Team"])}")
 
 def teamBatchSelector():
     global selectedBatch2
+    # updates batch of teams shown on the dropdown
     if ' '.join(dropRect["Team Chunk"]) == 'do not select':
+        #required to work
         pass
     else:
+        # updates the batch
         selectedBatch2 = int(' '.join(dropRect["Team Chunk"]))
         print(selectedBatch2)
 
-#test code
+#define allllllllllllll the lists
 matchList = [0, 0, 0, 0, 0, 0, 0]
 matchList[0] = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
 matchList[1] = ['11', '12', '13', '14', '15', '16', '17', '18', '19', '20']
@@ -209,6 +220,7 @@ matchList[5] = ['51', '52', '53', '54', '55', '56', '57', '58', '59', '60']
 matchList[6] = ['61', '62', '63', '64', '65', '66', '67', '68', '69', '70']
 batchList = ['1', '2', '3', '4', '5', '6', '7', 'do not select']
 teamList = [0, 0, 0, 0, 0, 0, 0]
+#replace these with actual team lists before compile
 teamList[0] = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
 teamList[1] = ['11', '12', '13', '14', '15', '16', '17', '18', '19', '20']
 teamList[2] = ['21', '22', '23', '24', '25', '26', '27', '28', '29', '30']
@@ -229,6 +241,7 @@ def drawMainMenu(closeX, closeY, closeW, closeH, startX, startY, startW, startH,
     for event in pygame.event.get():
         global event2
         event2 = event
+        #check if clicked
         closeButton.isClicked(event)
         startButton.isClicked(event)
         matchSelectDrop.isClicked(event)
@@ -245,29 +258,33 @@ def drawMainMenu(closeX, closeY, closeW, closeH, startX, startY, startW, startH,
     startButton.draw(screen)
     screen.blit(pygame.transform.scale(logo, (logoW, logoH)), (0, 0))
 
-def initDrops(matchX, matchY, matchW, matchH, matchFont, teamX, teamY, teamW, teamH, teamFont):
+def initDropsMainMenu(matchX, matchY, matchW, matchH, matchFont):
     #separate function to define dropdowns so you can actually read data from them
     global matchSelectDrop
     global matchBatch
     global selectedBatch
-    global selectedBatch2
-    global teamSelectDrop
-    global teamBatch
     for event in pygame.event.get():
         global event2
         event2 = event
     selectedBatch = 1
-    selectedBatch2 = 1
     matchSelectDrop = Dropdown(text="Match", x = matchX, y = matchY, width = matchW, height = matchH, color = (0, 255, 0), function = matchSelector, fontType = matchFont, dropFont = 1, rounding = 5, dropdownAmount = 10, textList = matchList[selectedBatch-1], event=event2)
     matchBatch = Dropdown(text="Match Chunk", x = matchX+matchW+25, y = matchY, width = matchW, height = matchH, color = (0, 255, 0), function = matchBatchSelector, fontType = matchFont, dropFont = 1, rounding = 5, dropdownAmount = 7, textList = batchList, event=event2)
     matchSelectDrop.initDropped()
     matchBatch.initDropped()
+
+def initDropsMainMenu2(teamX, teamY, teamW, teamH, teamFont):
+    #here to clean up functions
+    global selectedBatch2
+    global teamSelectDrop
+    global teamBatch
+    selectedBatch2 = 1
     teamSelectDrop = Dropdown(text="Team", x = teamX, y = teamY, width = teamW, height = teamH, color = (0, 255, 0), function = teamSelector, fontType = teamFont, dropFont = 1, rounding = 5, dropdownAmount = 10, textList = teamList[selectedBatch2-1], event=event2)
     teamBatch = Dropdown(text="Team Chunk", x = teamX-teamW-25, y = teamY, width = teamW, height = teamH, color = (0, 255, 0), function = teamBatchSelector, fontType = teamFont, dropFont = 1, rounding = 5, dropdownAmount = 7, textList = batchList2, event=event2)
     teamSelectDrop.initDropped()
     teamBatch.initDropped()
 
 def updateDynamicDrops():
+    #updates the dropdowns dynamically
     global matchSelectDrop
     global teamSelectDrop
     for event in pygame.event.get():
