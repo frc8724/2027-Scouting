@@ -1,5 +1,8 @@
 import pygame
 import sys
+import csv
+import os
+from pathlib import Path
 pygame.init()
 # put this at beginning of gui code!!!!!!!
 def aspectRatio(x, y):
@@ -8,19 +11,65 @@ def aspectRatio(x, y):
 #pygame setup
 clock = pygame.time.Clock()
 pygame.display.set_caption("Scouting App")
-pygame.display.set_icon(pygame.image.load("assets/logo.png"))
 # font sizes
-smallFont = pygame.font.Font("assets/mainFont.ttf", 15)
-bigFont = pygame.font.Font("assets/mainFont.ttf", 30)
-hugeFont = pygame.font.Font("assets/mainFont.ttf", 50)
-boldFont = pygame.font.Font("assets/boldFont.ttf", 30)
+if 'ANDROID_ARGUMENT' in os.environ:
+    smallFont = pygame.font.Font("/data/data/org.frc8724.scouting/files/app/assets/mainFont.ttf", 15)
+    bigFont = pygame.font.Font("/data/data/org.frc8724.scouting/files/app/assets/mainFont.ttf", 30)
+    hugeFont = pygame.font.Font("/data/data/org.frc8724.scouting/files/app/assets/mainFont.ttf", 50)
+    boldFont = pygame.font.Font("/data/data/org.frc8724.scouting/files/app/assets/boldFont.ttf", 30)
+    logo = pygame.image.load("/data/data/org.frc8724.scouting/files/app/assets/logo.png")
+    pygame.display.set_icon(pygame.image.load("/data/data/org.frc8724.scouting/files/app/assets/logo.png"))
+else:
+    smallFont = pygame.font.Font("assets/mainFont.ttf", 15)
+    bigFont = pygame.font.Font("assets/mainFont.ttf", 30)
+    hugeFont = pygame.font.Font("assets/mainFont.ttf", 50)
+    boldFont = pygame.font.Font("assets/boldFont.ttf", 30)
+    logo = pygame.image.load("assets/logo.png")
+    pygame.display.set_icon(pygame.image.load("assets/logo.png"))
 menuNumber = 1
 # 1 = main menu
 # 2 = auto period
+
+#also call at beginning of GUI code to get the dir to write to!!
+def getWriteDir():
+    #directory for android/Windows
+    global writeDir
+    if 'ANDROID_ARGUMENT' in os.environ:
+        # Android
+        writeDir = Path(os.environ['EXTERNAL_STORAGE']) / 'Documents' / 'FRC_Scouting_Output'
+    else:
+        # Windows
+        writeDir = Path.home() / 'FRC_Scouting_Output'
+    writeDir.mkdir(parents=True, exist_ok=True)
+
+#yes, the dropdown system relies on dictionaries (in dictionaries). however, it is quite optimized!
 global dropRect
 dropRect = {}
 global rect
 rect = {}
+global fonts
+fonts = {}
+def fontDef(fontVar, fontType, passedText="well that's not great"):
+    #necessary for optimization; makes it so the fonts (at least for buttons) are only defined on startup and not every frame.
+    if fontType == 1:
+        variable = smallFont.render(passedText, True, (0, 0, 0))
+    elif fontType == 2:
+        variable = bigFont.render(passedText, True, (0, 0, 0))
+    elif fontType == 3:
+        variable = hugeFont.render(passedText, True, (0, 0, 0))
+    elif fontType == 4:
+        variable = smallFont.render(passedText, True, (255, 255, 255))
+    elif fontType == 5:
+        variable = bigFont.render(passedText, True, (255, 255, 255))
+    elif fontType == 6:
+        variable = hugeFont.render(passedText, True, (255, 255, 255))
+    elif fontType == 7:
+        variable = boldFont.render(passedText, True, (0, 0, 0))
+    elif fontType == 8:
+        variable = boldFont.render(passedText, True, (255, 255, 255))
+    else:
+        variable = bigFont.render(passedText, True, (0, 0, 0))
+    fonts[fontVar] = variable
 class Button:
     def __init__(self, text, x, y, width, height, color, function, fontType, rounding):
         #def variables
@@ -29,32 +78,16 @@ class Button:
         self.color = color
         self.function = function
         self.rounding = rounding
+        self.textRender = text
 
         #initialize font system
-        if fontType == 1:
-            self.textRender = smallFont.render(text, True, (0, 0, 0))
-        elif fontType == 2:
-            self.textRender = bigFont.render(text, True, (0, 0, 0))
-        elif fontType == 3:
-            self.textRender = hugeFont.render(text, True, (0, 0, 0))
-        elif fontType == 4:
-            self.textRender = smallFont.render(text, True, (255, 255, 255))
-        elif fontType == 5:
-            self.textRender = bigFont.render(text, True, (255, 255, 255))
-        elif fontType == 6:
-            self.textRender = hugeFont.render(text, True, (255, 255, 255))
-        elif fontType == 7:
-            self.textRender = boldFont.render(text, True, (0, 0, 0))
-        elif fontType == 8:
-            self.textRender = boldFont.render(text, True, (255, 255, 255))
-        else:
-            self.textRender = bigFont.render(text, True, (0, 0, 0))
-        self.textRender2 = self.textRender.get_rect(center=self.rect.center)
+        fontDef(self.textRender, fontType, self.text)
+        self.textRender2 = fonts[self.textRender].get_rect(center=self.rect.center)
 
     def draw(self, surface):
         #put the button on the screen
         pygame.draw.rect(surface, self.color, self.rect, border_radius=self.rounding)
-        surface.blit(self.textRender, self.textRender2)
+        surface.blit(fonts[self.textRender], self.textRender2)
 
     def isClicked(self, event):
         #see if it is clicked
@@ -178,10 +211,12 @@ def startMatchButton():
     #non functional currently
     print("match started")
     menuNumber = 2
+    #this part is testing!!
+    testTheValues()
 
 def matchSelector():
-    #temp code
-    print(f"text: {' '.join(dropRect["Match"])}")
+    global matchNumber2
+    matchNumber2 = ' '.join(dropRect["Match"])
 
 def matchBatchSelector():
     global selectedBatch
@@ -195,8 +230,8 @@ def matchBatchSelector():
         print(selectedBatch)
 
 def teamSelector():
-    # temp code
-    print(f"text: {' '.join(dropRect["Team"])}")
+    global teamNumber
+    teamNumber = ' '.join(dropRect["Team"])
 
 def teamBatchSelector():
     global selectedBatch2
@@ -208,6 +243,14 @@ def teamBatchSelector():
         # updates the batch
         selectedBatch2 = int(' '.join(dropRect["Team Chunk"]))
         print(selectedBatch2)
+
+def positionSelector():
+    global robotPosition
+    robotPosition = ' '.join(dropRect["Position"])
+
+def scoutSelector():
+    global scoutName
+    scoutName = ' '.join(dropRect["Scout"])
 
 #define allllllllllllll the lists
 matchList = [0, 0, 0, 0, 0, 0, 0]
@@ -229,13 +272,19 @@ teamList[4] = ['41', '42', '43', '44', '45', '46', '47', '48', '49', '50']
 teamList[5] = ['51', '52', '53', '54', '55', '56', '57', '58', '59', '60']
 teamList[6] = ['61', '62', '63', '64', '65', '66', '67', '68', '69', '70']
 batchList2 = ['1', '2', '3', '4', '5', '6', '7', 'do not select']
+positionList = ["Red 1", "Red 2", "Red 3", "Blue 1", "Blue 2", "Blue 3"]
+scoutList = ["John Doe", "New Scout", "Scouts Go", "Here In", "Production Please", "Thank You"]
+
+def testTheValues():
+    with open(writeDir / f'{matchNumber2}.csv', 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow([matchNumber2, teamNumber, robotPosition, scoutName])
 
 def drawMainMenu(closeX, closeY, closeW, closeH, startX, startY, startW, startH, logoW, logoH):
     #infinite parameters
     global closeButton
     global matchSelectDrop
     global teamSelectDrop
-    logo = pygame.image.load("assets/logo.png")
     closeButton = Button(text="Close", x = closeX, y = closeY, width = closeW, height = closeH, color = (255, 0, 0), function = exitButton, fontType = 1, rounding = 15)
     startButton = Button(text="Start Match", x = startX, y = startY, width = startW, height = startH, color = (100, 100, 255), function = startMatchButton, fontType = 3, rounding = 50)
     for event in pygame.event.get():
@@ -248,6 +297,8 @@ def drawMainMenu(closeX, closeY, closeW, closeH, startX, startY, startW, startH,
         matchBatch.isClicked(event)
         teamSelectDrop.isClicked(event)
         teamBatch.isClicked(event)
+        positionSelect.isClicked(event)
+        scoutSelect.isClicked(event)
     #draw the things
     screen.fill((100, 100, 100))
     matchSelectDrop.draw(screen)
@@ -256,6 +307,8 @@ def drawMainMenu(closeX, closeY, closeW, closeH, startX, startY, startW, startH,
     teamBatch.draw(screen)
     closeButton.draw(screen)
     startButton.draw(screen)
+    positionSelect.draw(screen)
+    scoutSelect.draw(screen)
     screen.blit(pygame.transform.scale(logo, (logoW, logoH)), (0, 0))
 
 def initDropsMainMenu(matchX, matchY, matchW, matchH, matchFont):
@@ -272,16 +325,22 @@ def initDropsMainMenu(matchX, matchY, matchW, matchH, matchFont):
     matchSelectDrop.initDropped()
     matchBatch.initDropped()
 
-def initDropsMainMenu2(teamX, teamY, teamW, teamH, teamFont):
+def initDropsMainMenu2(teamX, teamY, teamW, teamH, teamFont, positionX, positionY, positionW, positionH, positionFont, scoutX, scoutY, scoutW, scoutH, scoutFont):
     #here to clean up functions
     global selectedBatch2
     global teamSelectDrop
     global teamBatch
+    global positionSelect
+    global scoutSelect
     selectedBatch2 = 1
     teamSelectDrop = Dropdown(text="Team", x = teamX, y = teamY, width = teamW, height = teamH, color = (0, 255, 0), function = teamSelector, fontType = teamFont, dropFont = 1, rounding = 5, dropdownAmount = 10, textList = teamList[selectedBatch2-1], event=event2)
     teamBatch = Dropdown(text="Team Chunk", x = teamX-teamW-25, y = teamY, width = teamW, height = teamH, color = (0, 255, 0), function = teamBatchSelector, fontType = teamFont, dropFont = 1, rounding = 5, dropdownAmount = 7, textList = batchList2, event=event2)
+    positionSelect = Dropdown(text="Position", x = positionX, y = positionY, width = positionW, height = positionH, color = (0, 255, 0), function = positionSelector, fontType = positionFont, dropFont = 1, rounding = 5, dropdownAmount = 6, textList = positionList, event=event2)
+    scoutSelect = Dropdown(text="Scout", x = scoutX, y = scoutY, width = scoutW, height = scoutH, color = (0, 255, 0), function = scoutSelector, fontType = scoutFont, dropFont = 1, rounding = 5, dropdownAmount = len(scoutList), textList = scoutList, event=event2)
     teamSelectDrop.initDropped()
     teamBatch.initDropped()
+    positionSelect.initDropped()
+    scoutSelect.initDropped()
 
 def updateDynamicDrops():
     #updates the dropdowns dynamically
