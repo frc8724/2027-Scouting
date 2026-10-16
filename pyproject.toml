@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "frc_scout"
+version = "0.1.0"
+description = "2026/27 FRC Scouting App."
+readme = "TODO.md"
+requires-python = ">3.12"
+license = "MIT AND (Apache-2.0 OR BSD-2-Clause)"
+authors = [
+    {name = "Derek"} 
+]
