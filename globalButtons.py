@@ -240,6 +240,7 @@ def exitButton():
 def startMatchButton():
     #non functional currently
     print("match started")
+    global menuNumber
     menuNumber = 2
     print(menuNumber)
 
