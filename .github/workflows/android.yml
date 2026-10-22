@@ -27,7 +27,7 @@ jobs:
         build-essential \
         ccache \
         git \
-        libiffi-dev \ 
+        libffi-dev \ 
         libssl-dev \
         libtool \
         openjdk-17-jdk \
