@@ -410,4 +410,4 @@ def drawAutoMenu(fuelX, fuelY, fuelW, fuelH, fuelFont):
     autoFuelPlus1.draw(screen)
     autoFuelMinus1.draw(screen)
     screen.blit(hugeFont.render(str(autoFuelCount), True, (0, 0, 0)), ((fuelX+(fuelW/3))*xMult, (fuelY+(fuelH/3))*yMult))
-    screen.blit(boldFont.render("Auto Fuel Count", True, (0, 0, 0)), ((fuelX-fuelW)*xMult, (fuelY-(fuelH/1.5))*yMult))
+    screen.blit(boldFont.render("Auto Fuel Count", True, (0, 0, 0)), (fuelX*xMult, (fuelY-fuelH/2)*yMult))
