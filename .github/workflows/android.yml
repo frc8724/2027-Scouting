@@ -2,11 +2,8 @@ name: Compile for Android
 
 on:
   push:
-	branches:
-	  - main
-  pull_request:
-	branches:
-	  - main
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -14,53 +11,53 @@ jobs:
     runs-on: ubuntu-22.04
     
     steps:
-	  -name: Checkout repository
-	  uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-      -name: Set up Python
-	  uses: actions/setup-python@v5
+    - name: Set up Python
+      uses: actions/setup-python@v5
       with:
-	    python-version: '3.10.12'
-	    cache: 'pip'
+        python-version: '3.10.12'
+        cache: 'pip'
 	  
-	  -name: Install dependencies
+    - name: "Install dependencies"
       run: |
-	    sudo apt-get update
-		sudo apt-get install -y \
-		build-essential \
-		ccache \
-		git \
-		libiffi-dev \ 
-		libssl-dev \
-		libtool \
-		openjdk-17-jdk \
-		patch \
-		unzip \
-		zlib1g-dev \
+        sudo apt-get update
+        sudo apt-get install -y \
+        build-essential \
+        ccache \
+        git \
+        libiffi-dev \ 
+        libssl-dev \
+        libtool \
+        openjdk-17-jdk \
+        patch \
+        unzip \
+        zlib1g-dev \
         autoconf \
-		automake \
-		cmake \
-		pkg-config \
-	  
-	  -name: Cache Buildozer and Python dependencies
-	  uses: actions/cache@v3
-	  with:
-		path: ~/.buildozer
-		key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}
-		restore-keys: |
-		  ${{ runner.os }}-buildozer-
+        automake \
+        cmake \
+        pkg-config 
 
-	  -name: Install Pip dependencies
-	  run: |
-	    python -m pip install --upgrade pip
-		pip install "pygame", "pygame_sdl2", "kivy", "buildozer", "cython", "setuptools", "wheel"
+    - name: Cache Buildozer and Python dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.buildozer
+        key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}
+        restore-keys: |
+          ${{ runner.os }}-buildozer-
 
-	  -name: Build APK
-	  run: |
-		yes | buildozer -v android debug
+    - name: Install Pip dependencies
+      run: |
+          python -m pip install --upgrade pip
+          pip install "pygame", "pygame_sdl2", "kivy", "buildozer", "cython", "setuptools", "wheel"
 
-	  -name: Upload APK
-	  uses: actions/upload-artifact@v4
-	  with:
-		name: FRC-8724-Scout-APK-Debug
-		path: bin/*.apk
+    - name: Build APK
+      run: |
+          yes | buildozer -v android debug
+  
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: FRC-8724-Scout-APK-Debug
+        path: bin/*.apk
