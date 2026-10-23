@@ -39,10 +39,17 @@ jobs:
           pip install cython==0.29.34
           pip install pygame kivy buildozer
 
-    - name: File cleanup
+    - name: File cleanup/free space so Buildozer gets enough room to work
       run: |
         mv phonePortrait.py main.py
         rm -f desktop.py ipad.py
+        sudo rm -rf /usr/local/.ghcup
+        sudo rm -rf /opt/hostedtoolcache/CodeQL
+        sudo rm -rf /usr/local/lib/android/sdk/ndk
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /opt/ghc
+        sudo rm -rf /usr/local/share/boost
+        sudo apt-get clean
 
     - name: Build APK
       run: |
