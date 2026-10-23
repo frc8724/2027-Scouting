@@ -39,9 +39,14 @@ jobs:
           pip install cython==0.29.34
           pip install pygame kivy buildozer
 
+    - name: File cleanup
+      run: |
+        mv phonePortrait.py main.py
+        rm -f desktop.py ipad.py
+
     - name: Build APK
       run: |
-          yes | buildozer -v android debug
+        yes | buildozer android debug
   
     - name: Upload APK
       uses: actions/upload-artifact@v4
