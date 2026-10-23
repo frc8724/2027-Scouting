@@ -23,21 +23,7 @@ jobs:
     - name: "Install dependencies"
       run: |
         sudo apt-get update || true
-        sudo apt-get install -y || true \
-        build-essential \
-        ccache \
-        git \
-        libffi-dev \ 
-        libssl-dev \
-        libtool \
-        openjdk-17-jdk \
-        patch \
-        unzip \
-        zlib1g-dev \
-        autoconf \
-        automake \
-        cmake \
-        pkg-config 
+        sudo apt-get install build-essential ccache git libffi-dev libssl-dev libtool openjdk-17-jdk patch unzip zlib1g-dev autoconf automake cmake pkg-config -y || true
 
     - name: Cache Buildozer and Python dependencies
       uses: actions/cache@v3
