@@ -23,7 +23,7 @@ jobs:
     - name: "Install dependencies"
       run: |
         sudo apt-get update || true
-        sudo apt-get install build-essential ccache git libffi-dev libssl-dev libtool openjdk-17-jdk patch unzip zlib1g-dev autoconf automake cmake pkg-config -y || true
+        sudo apt-get install zip build-essential ccache git libffi-dev libssl-dev libtool openjdk-17-jdk patch unzip zlib1g-dev autoconf automake cmake pkg-config libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libgstreamer1.0-dev libgstreamer1.0-plugins-base libncurses5-dev libncursesw5-dev libtinfo5 -y || true
 
     - name: Cache Buildozer and Python dependencies
       uses: actions/cache@v3
@@ -35,8 +35,9 @@ jobs:
 
     - name: Install Pip dependencies
       run: |
-          python -m pip install --upgrade pip
-          pip install "pygame", "pygame_sdl2", "kivy", "buildozer", "cython", "setuptools", "wheel"
+          python -m pip install --upgrade pip setuptools wheel
+          pip install cython==0.29.34
+          pip install pygame kivy buildozer
 
     - name: Build APK
       run: |
