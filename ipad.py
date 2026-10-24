@@ -1,11 +1,15 @@
 #Made by Derek
-from globalButtons import *
-aspectRatio(600, 800)
-initDropsMainMenu(50, 75, 100, 50, 1)
-initDropsMainMenu2(450, 75, 100, 50, 1)
+import globalButtons as main
+main.getWriteDir()
+main.aspectRatio(600, 800)
+main.initDropsMainMenu(10, 60, 75, 50, 2)
+main.initDropsMainMenu2(400, 60, 75, 50, 2, 200, 60, 75, 50, 2, 500, 60, 100, 50, 2)
+main.initDropsAutoMenu(350, 100, 200, 100, 3)
 while True:
-    if menuNumber == 1:
-        drawMainMenu(550, 0, 50, 25, 50, 675, 500, 100, 50, 50)
-        updateDynamicDrops()
-    pygame.display.flip()
-    clock.tick(60)
+    if main.menuNumber == 1:
+        main.drawMainMenu(550, 0, 50, 25, 50, 700, 500, 75, 50, 50, 12.5, 625, 125, 50)
+
+    if main.menuNumber == 2:
+        main.drawAutoMenu(100, 100, 50, 50, 2)
+    main.pygame.display.flip()
+    main.clock.tick(60)

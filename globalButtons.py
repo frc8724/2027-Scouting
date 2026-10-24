@@ -71,9 +71,9 @@ global fonts
 fonts = {}
 
 #default values for saving, required to not crash when saving before selecting values
-matchNumber2 = "-1"
-teamNumber = "-1"
-robotPosition = "none (did not save)"
+matchNumber2 = "none"
+teamNumber = "none"
+robotPosition = "none"
 scoutName = "John Doe"
 global autoFuelCount
 autoFuelCount = 0
@@ -121,7 +121,7 @@ class Button:
 
     def isClicked(self, event):
         #see if it is clicked
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 or event.type == pygame.FINGERDOWN:
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 or event.type == pygame.FINGERDOWN and event.button == 1:
             if self.rect.collidepoint(event.pos):
                 self.function()
 
@@ -205,13 +205,13 @@ class Dropdown:
                 self.textRender3 = self.textRenderDrop.get_rect(center=dropRect[self.text][self.list[z-1]].center)
                 pygame.draw.rect(surface, self.color, dropRect[self.text][self.list[z-1]], border_radius=self.rounding)
                 surface.blit(self.textRenderDrop, self.textRender3)
-                if self.event.type == pygame.MOUSEBUTTONDOWN and self.event.button == 1 or self.event.type == pygame.FINGERDOWN:
+                if self.event.type == pygame.MOUSEBUTTONDOWN and self.event.button == 1 or self.event.type == pygame.FINGERDOWN and event.button == 1:
                     #check click events for the dropped boxes
                     if dropRect[self.text][self.amount].collidepoint(self.event.pos):
                         self.function()
 
     def isClicked(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 or event.type == pygame.FINGERDOWN:
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 or event.type == pygame.FINGERDOWN and event.button == 1:
             if rect[self.text].collidepoint(event.pos):
                 #click events (only for the main button, not the dropped ones)
                 if self.dropped == 0:
@@ -251,6 +251,7 @@ def matchSelector():
     else:
         matchNumber2 = ' '.join(dropRect["Match"])
         matchSelectDrop.dropped = 0
+        displayMatch.text = f'Match {matchNumber2}'
 
 def matchBatchSelector():
     global selectedBatch
@@ -304,7 +305,26 @@ def autoFuelPlus1Button():
 
 def autoFuelMinus1Button():
     global autoFuelCount
-    autoFuelCount -= 1
+    if autoFuelCount >= 1:
+        # check so that the counter can't go below 0
+        autoFuelCount -= 1
+    else:
+        pass
+
+def towerLevelSelect():
+    # pretty self-explanitory code
+    global towerLevel
+    if ' '.join(dropRect["Tower Level"]) == 'placeholder':
+        pass
+    else:
+        try:
+            towerLevel = int(' '.join(dropRect["Tower"]))
+        except Exception as e:
+            pass
+
+def empty():
+    #for static "display" buttons
+    pass
 
 #define allllllllllllll the lists
 matchList = [0, 0, 0, 0, 0, 0, 0]
@@ -328,19 +348,29 @@ teamList[6] = ['61', '62', '63', '64', '65', '66', '67', '68', '69', '70', 'plac
 batchList2 = ['1', '2', '3', '4', '5', '6', '7', 'do not select']
 positionList = ["Red 1", "Red 2", "Red 3", "Blue 1", "Blue 2", "Blue 3", "placeholder"]
 scoutList = ["Default Scout", "New Scout", "Scouts Go", "Here In", "Production Please", "Thank You", "placeholder"]
+towerList = ['1', '2', '3', 'placeholder']
 
 def testTheValues():
     with open(writeDir / f'{matchNumber2}.csv', 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow([matchNumber2, teamNumber, robotPosition, scoutName])
 
-def drawMainMenu(closeX, closeY, closeW, closeH, startX, startY, startW, startH, logoW, logoH):
+def drawMainMenu(closeX, closeY, closeW, closeH, startX, startY, startW, startH, logoW, logoH, displayX, displayY, displayW, displayH):
     #infinite parameters
     global closeButton
     global matchSelectDrop
     global teamSelectDrop
+    global displayMatch
+    global displayTeam
+    global displayScout
+    global displayPosition
     closeButton = Button(text="Close", x = closeX*xMult, y = closeY*yMult, width = closeW*xMult, height = closeH*yMult, color = (255, 0, 0), function = exitButton, fontType = 2, rounding = math.trunc(15*xMult))
     startButton = Button(text="Start Match", x = startX*xMult, y = startY*yMult, width = startW*xMult, height = startH*yMult, color = (100, 100, 255), function = startMatchButton, fontType = 3, rounding = math.trunc(50*xMult))
+    # "display" buttons that do nothing because the dropdowns can update any text on-screen *except* its own
+    displayMatch = Button(text=f'Match: {matchNumber2}', x = displayX*xMult, y = displayY*yMult, width = displayW*xMult, height = displayH*yMult, color = (0, 150, 0), function = empty, fontType = 2, rounding = math.trunc(15*xMult))
+    displayTeam = Button(text=f'Team #: {teamNumber}', x = (displayX+(displayW*2)+50)*xMult, y = displayY*yMult, width = displayW*xMult, height = displayH*yMult, color = (0, 150, 0), function = empty, fontType = 2, rounding = math.trunc(15*xMult))
+    displayScout = Button(text=f'Scout: {scoutName}', x = (displayX+(displayW*3)+75)*xMult, y = displayY*yMult, width = displayW*xMult, height = displayH*yMult, color = (0, 150, 0), function = empty, fontType = 2, rounding = math.trunc(15*xMult))
+    displayPosition = Button(text=f'Position: {robotPosition}', x = (displayX+displayW+25)*xMult, y = displayY*yMult, width = displayW*xMult, height = displayH*yMult, color = (0, 150, 0), function = empty, fontType = 2, rounding = math.trunc(15*xMult))
     #check if clicked
     for event in pygame.event.get():
         event2 = event
@@ -362,6 +392,10 @@ def drawMainMenu(closeX, closeY, closeW, closeH, startX, startY, startW, startH,
     startButton.draw(screen)
     positionSelect.draw(screen)
     scoutSelect.draw(screen)
+    displayMatch.draw(screen)
+    displayTeam.draw(screen)
+    displayScout.draw(screen)
+    displayPosition.draw(screen)
     screen.blit(pygame.transform.scale(logo, (logoW*xMult, logoH*yMult)), (0, 0))
     matchSelectDrop.list = matchList[selectedBatch-1]
     teamSelectDrop.list = teamList[selectedBatch2-1]
@@ -395,6 +429,11 @@ def initDropsMainMenu2(teamX, teamY, teamW, teamH, teamFont, positionX, position
     positionSelect.initDropped()
     scoutSelect.initDropped()
 
+def initDropsAutoMenu(towerX, towerY, towerW, towerH, towerFont):
+    global towerSelect
+    towerSelect = Dropdown(text="Tower Level", x = towerX*xMult, y = towerY*yMult, width = towerW*xMult, height = towerH*yMult, color = (0, 255, 0), function = towerLevelSelect, fontType = towerFont, dropFont = 3, rounding = math.trunc(5*xMult), dropdownAmount = len(towerList)-1, textList = towerList, event=event2)
+    towerSelect.initDropped()
+
 def drawAutoMenu(fuelX, fuelY, fuelW, fuelH, fuelFont):
     #infinite parameters v2
     global autoFuelPlus1
@@ -406,8 +445,10 @@ def drawAutoMenu(fuelX, fuelY, fuelW, fuelH, fuelFont):
         event2 = event
         autoFuelPlus1.isClicked(event2)
         autoFuelMinus1.isClicked(event2)
+        towerSelect.isClicked(event2)
     screen.fill((100, 100, 100))
     autoFuelPlus1.draw(screen)
     autoFuelMinus1.draw(screen)
+    towerSelect.draw(screen)
     screen.blit(hugeFont.render(str(autoFuelCount), True, (0, 0, 0)), ((fuelX+(fuelW/3))*xMult, (fuelY+(fuelH/3))*yMult))
     screen.blit(boldFont.render("Auto Fuel Count", True, (0, 0, 0)), (fuelX*xMult, (fuelY-fuelH/2)*yMult))
