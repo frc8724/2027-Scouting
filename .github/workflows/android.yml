@@ -40,7 +40,7 @@ jobs:
         key: buildozer-all-${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('buildozer.spec') }}
         restore-keys: |
           buildozer-all-${{ runner.os }}-${{ steps.get-date.outputs.date }}-
-          buildozer-all-${{ runner-os }}-
+          buildozer-all-${{ runner.os }}-
 
     - name: Install Pip dependencies
       run: |
