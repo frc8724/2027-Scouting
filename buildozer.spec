@@ -27,7 +27,7 @@ source.include_exts = py,png,jpg,kv,atlas,ttf
 #source.exclude_exts = spec
 
 # (list) List of directory to exclude (leave empty to not exclude anything)
-#source.exclude_dirs = tests, bin, venv
+source.exclude_dirs = tests, bin, venv, assets/readme
 
 # (list) List of exclusions using pattern matching
 # Do not prefix with './'
@@ -164,7 +164,7 @@ android.minapi = 21
 #android.service_class_name = org.kivy.android.PythonService
 
 # (str) Android app theme, default is ok for Kivy-based app
-# android.apptheme = "@android:style/Theme.NoTitleBar"
+android.apptheme = "@android:style/Theme.NoTitleBar.Fullscreen"
 
 # (list) Pattern to whitelist for the whole project
 #android.whitelist =

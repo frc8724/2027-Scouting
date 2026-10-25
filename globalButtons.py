@@ -121,7 +121,7 @@ class Button:
 
     def isClicked(self, event):
         #see if it is clicked
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 or event.type == pygame.FINGERDOWN and event.button == 1:
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.rect.collidepoint(event.pos):
                 self.function()
 
@@ -205,13 +205,13 @@ class Dropdown:
                 self.textRender3 = self.textRenderDrop.get_rect(center=dropRect[self.text][self.list[z-1]].center)
                 pygame.draw.rect(surface, self.color, dropRect[self.text][self.list[z-1]], border_radius=self.rounding)
                 surface.blit(self.textRenderDrop, self.textRender3)
-                if self.event.type == pygame.MOUSEBUTTONDOWN and self.event.button == 1 or self.event.type == pygame.FINGERDOWN and event.button == 1:
+                if self.event.type == pygame.MOUSEBUTTONDOWN and self.event.button == 1:
                     #check click events for the dropped boxes
                     if dropRect[self.text][self.amount].collidepoint(self.event.pos):
                         self.function()
 
     def isClicked(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 or event.type == pygame.FINGERDOWN and event.button == 1:
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if rect[self.text].collidepoint(event.pos):
                 #click events (only for the main button, not the dropped ones)
                 if self.dropped == 0:
