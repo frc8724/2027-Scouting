@@ -21,8 +21,18 @@ The "Match Chunk" and "Team Chunk" dropdowns are solely for picking a set, or "c
 For example, selecting 4 in the Match Chunk dropdown lets you pick from matches 31-40, as shown below:
 ![Example usage of "chunks"](assets/readme/chunk-example.png)
 
-The auto period and farther screens are not completed yet.
+## AUTO PERIOD
+![The auto menu](assets/readme/auto-menu.png)
 
+Use the buttons labeled `+1` and `-1` to count Fuel scored and cycles of intaking Fuel to the center.
+![Plus and minus buttons](assets/readme/fuel-counter.png)
+
+The white square next to the text saying `Climber?` is a check box.
+Click it if the robot climbed in auto, as well as selecting the level it climbed to.
+![The climber checkbox](assets/readme/climb-checked.png)
+
+Make sure to select the Alliance that won the auto period (scored the most points), as this will be important in the tele-op section.
+![Winning Alliance dropdown](assets/readme/winning-alliance.png)
 # BUILD INSTRUCTIONS
 # WINDOWS
 1. Install Git from https://git-scm.com

@@ -591,6 +591,7 @@ def drawAutoMenu(fuelX, fuelY, fuelW, fuelH, fuelFont, displayX, displayY, displ
     displayStart = Button(text=f'Starting Position: {robotPos}', x = (displayX+(displayW)+25)*xMult, y = displayY*yMult, width = displayW*xMult, height = displayH*yMult, color = DARKERGREEN, function = empty, fontType = 2, rounding = math.trunc(15*xMult))
     displayWinner = Button(text=f'Winning Alliance: {autoWinner}', x = (displayX+(displayW*2)+50)*xMult, y = displayY*yMult, width = displayW*xMult, height = displayH*yMult, color = DARKERGREEN, function = empty, fontType = 2, rounding = math.trunc(15*xMult))
     startTeleop = Button(text="Start tele-op", x = nextX*xMult, y = nextY*yMult, width = nextW*xMult, height = nextH*yMult, color = BLUE, function = startTeleopButton, fontType = 3, rounding = math.trunc(50*xMult))
+   
     #check if clicked v2
     for event in pygame.event.get():
         event2 = event
@@ -604,6 +605,7 @@ def drawAutoMenu(fuelX, fuelY, fuelW, fuelH, fuelFont, displayX, displayY, displ
         robotStart.isClicked(event2)
         autoWinnerSelect.isClicked(event2)
         startTeleop.isClicked(event2)
+
     screen.fill(GRAY)
     autoFuelPlus1.draw(screen)
     autoFuelMinus1.draw(screen)
@@ -622,3 +624,22 @@ def drawAutoMenu(fuelX, fuelY, fuelW, fuelH, fuelFont, displayX, displayY, displ
     screen.blit(boldFont.render("Auto Fuel Count", True, BLACK), ((fuelX-(fuelW/2))*xMult, (fuelY-fuelH/2)*yMult))
     screen.blit(hugeFont.render(str(autoSwipesCount), True, BLACK), ((fuelX+(fuelW/3))*xMult, ((fuelY+(fuelH/3))+fuelH+50)*yMult))
     screen.blit(boldFont.render("Auto Cycles Count", True, BLACK), ((fuelX-(fuelW/1.75))*xMult, ((fuelY-fuelH/2)+fuelH+50)*yMult))
+
+def drawTeleopMenu(fuelX, fuelY, fuelW, fuelH, fuelFont, displayX, displayY, displayW, displayH, nextX, nextY, nextW, nextH):
+    #infinite parameters v3
+    global autoFuelPlus1
+    global autofuelMinus1
+    teleFuelPlus1 = Button(text="+1", x = (fuelX+fuelW+25)*xMult, y = fuelY*yMult, width = fuelW*xMult, height = fuelH*yMult, color = DARKGREEN, function = teleFuelPlus1Button, fontType = fuelFont, rounding = math.trunc(15*xMult))
+    teleFuelMinus1 = Button(text="-1", x = (fuelX-fuelW-25)*xMult, y = fuelY*yMult, width = fuelW*xMult, height = fuelH*yMult, color = DARKRED, function = teleFuelMinus1Button, fontType = fuelFont, rounding = math.trunc(15*xMult))
+    
+    # check if clicked v3
+    for event in pygame.event.get():
+        event2 = event
+        teleFuelPlus1.isClicked(event2)
+        teleFuelMinus1.isClicked(event2)
+
+    screen.fill(GRAY)
+    teleFuelPlus1.draw(screen)
+    teleFuelMinus1.draw(screen)
+    screen.blit(hugeFont.render(str(autoFuelCount), True, BLACK), ((fuelX+(fuelW/3))*xMult, (fuelY+(fuelH/3))*yMult))
+    screen.blit(boldFont.render("Auto Fuel Count", True, BLACK), ((fuelX-(fuelW/2))*xMult, (fuelY-fuelH/2)*yMult))
