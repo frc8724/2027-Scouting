@@ -17,19 +17,22 @@ def aspectRatio(x, y):
     #screen setup
     global screen
     if 'ANDROID_ARGUMENT' in os.environ:
+        # workaround that (should) get rid of the title bar.
         screen = pygame.display.set_mode((x2, y2), pygame.FULLSCREEN)
     else:
+        # for windows/linux, causes a borderless fullscreen effect.
         screen = pygame.display.set_mode((x2, y2))
-#pygame setup for windows, android takes whatever is in buildozer.spec
+
+#pygame setup for windows, android takes whatever is in buildozer.spec for captions
 clock = pygame.time.Clock()
 pygame.display.set_caption("Scouting App")
 
-#this part is so initDrops doesn't fail immediatly
+# initial setup so initDrops<menu>() functions don't fail. 
 global event2
 for event in pygame.event.get():
     event2 = event
 
-# font sizes
+# font sizes/image loads
 if 'ANDROID_ARGUMENT' in os.environ:
     #android workaround because the working directory on android is system root not where the code is executing from, so assets need to be loaded with the full path
     smallFont = pygame.font.Font("/data/data/org.frc8724.scouting/files/app/assets/mainFont.ttf", 15)
@@ -51,16 +54,17 @@ global menuNumber
 menuNumber = 1
 # 1 = main menu
 # 2 = auto period
+# 3 = 
 
 #also call at beginning of GUI code to get the dir to write to!!
 def getWriteDir():
     #directory for android/Windows
     global writeDir
     if 'ANDROID_ARGUMENT' in os.environ:
-        # Android
+        # Android, writes to /storage/emulated/0/Documents/FRC_Scouting_Output on most devics.
         writeDir = Path(os.environ['EXTERNAL_STORAGE']) / 'Documents' / 'FRC_Scouting_Output'
     else:
-        # Windows
+        # Desktop, writes to C:/Users/<your name>/FRC_Scouting_Output on Windows and ~/FRC_Scouting_Output on Linux.
         writeDir = Path.home() / 'FRC_Scouting_Output'
     writeDir.mkdir(parents=True, exist_ok=True)
 
@@ -75,15 +79,18 @@ global checks
 # checkbox states are stored in a dictionary for ease-of-access
 checks = {}
 
-#default values for saving, required to not crash when saving before selecting values
+#default values for saving, required to not crash when saving before selecting values and display "buttons".
 matchNumber2 = "none"
 teamNumber = "none"
 robotPosition = "none"
 scoutName = "John Doe"
 global autoFuelCount
 autoFuelCount = 0
+global autoSwipesCount
+autoSwipesCount = 0
 towerLevel = 0
 robotPos = 'none'
+autoWinner = 'none'
 
 def fontDef(fontVar, fontType, passedText="well that's not great"):
     #necessary for optimization; makes it so the fonts (at least for buttons and checkboxes) are only defined on startup and not every frame.
@@ -249,6 +256,8 @@ class Checkbox:
         self.rect = pygame.Rect(x, y, width, height)
         self.rounding = rounding
         self.text = text
+        # absolutely the silliest piece of code in this project.
+        # it fakes a rect object that is never drawn to get the correct text positioning on the label.
         self.fakeRect = pygame.Rect(math.trunc(x+(width*2)), y, width, height)
 
         fontDef(f'{dictId}Box', fontType, self.text)
@@ -280,14 +289,21 @@ def exitButton():
     sys.exit()
 
 def startMatchButton():
-    #non functional currently
+    # functional currently
     print("match started")
     global menuNumber
-    menuNumber = 2
-    print(menuNumber)
+    if matchNumber2 != "none" and teamNumber != "none" and robotPosition != "none" and scoutName != "John Doe":
+        #make sure to select the values!!
+        menuNumber = 2
+    else:
+        # yes, it's only visible in the terminal.
+        print("Select all values first.")
 
 def matchSelector():
     global matchNumber2
+    # this bypass only works because the function is called mid-draw by the dropdown, specifically the sub-frame that has the button that was clicked as the latest thing drawn.
+    # this is required because the dropdown object's draw() function is destructive to the data that's not being currently rendered.
+    # ' '.join() is to strip the dictionary label off.
     if ' '.join(dropRect["Match"]) == 'placeholder':
         pass
     else:
@@ -353,6 +369,18 @@ def autoFuelMinus1Button():
     else:
         pass
 
+def autoSwipesPlus1Button():
+    global autoSwipesCount
+    autoSwipesCount += 1
+
+def autoSwipesMinus1Button():
+    global autoSwipesCount
+    if autoSwipesCount >= 1:
+        # check so that the counter can't go below 0
+        autoSwipesCount -= 1
+    else:
+        pass
+
 def towerLevelSelect():
     # pretty self-explanitory code
     global towerLevel
@@ -373,11 +401,19 @@ def robotPosSelect():
         robotPos = ' '.join(dropRect["Start Position"])
         robotStart.dropped = 0
 
+def autoWinnerSelect():
+    global autoWinner
+    if ' '.join(dropRect["Winning Alliance"]) == 'placeholder':
+        pass
+    else:
+        autoWinner = ' '.join(dropRect["Winning Alliance"])
+        autoWinnerSelect.dropped = 0
 def empty():
-    #for static "display" buttons
+    #for static "display" buttons that need to have a function assigned to them, but shouldn't do anything when clicked.
     pass
 
 #define allllllllllllll the lists
+# 'placeholder' values at the end are there for checking if the click was to drop it down or actually clicking a dropdown object.
 matchList = [0, 0, 0, 0, 0, 0, 0]
 matchList[0] = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'placeholder']
 matchList[1] = ['11', '12', '13', '14', '15', '16', '17', '18', '19', '20', 'placeholder']
@@ -401,6 +437,7 @@ positionList = ["Red 1", "Red 2", "Red 3", "Blue 1", "Blue 2", "Blue 3", "placeh
 scoutList = ["Default Scout", "New Scout", "Scouts Go", "Here In", "Production Please", "Thank You", "placeholder"]
 towerList = ['1', '2', '3', 'placeholder']
 startPositions = ['Left Trench', 'Left Bump', "Hub", 'Right Bump', 'Right Trench', 'placeholder']
+winnerList = ['Red', 'Blue', 'Tie', "placeholder"]
 
 def testTheValues():
     with open(writeDir / f'{matchNumber2}.csv', 'w', newline='') as csvfile:
@@ -481,15 +518,18 @@ def initDropsMainMenu2(teamX, teamY, teamW, teamH, teamFont, positionX, position
     positionSelect.initDropped()
     scoutSelect.initDropped()
 
-def initDropsAutoMenu(towerX, towerY, towerW, towerH, towerFont, startX, startY, startW, startH, startFont):
+def initDropsAutoMenu(towerX, towerY, towerW, towerH, towerFont, startX, startY, startW, startH, startFont, winnerX, winnerY, winnerW, winnerH, winnerFont):
     global towerSelect
     global towerCheck
     global robotStart
-    robotStart = Dropdown(text="Start Position", x = startX*xMult, y = startY*yMult, width = startW*xMult, height = startH*yMult, color = (0, 255, 0), function = robotPosSelect, fontType = startFont, dropFont = 3, rounding = math.trunc(5*xMult), dropdownAmount = 5, textList = startPositions, event=event2)
+    global autoWinnerSelect
+    robotStart = Dropdown(text="Start Position", x = startX*xMult, y = startY*yMult, width = startW*xMult, height = startH*yMult, color = (0, 255, 0), function = robotPosSelect, fontType = startFont, dropFont = startFont, rounding = math.trunc(5*xMult), dropdownAmount = 5, textList = startPositions, event=event2)
     towerCheck = Checkbox(x=towerX*xMult, y=(towerY-(towerH/2))*yMult, width=(towerW/3)*xMult, height=(towerH/3)*yMult, color=(255, 255, 255), clickedColor=(0, 0, 0), dictId='tower', rounding=15, text='Climber?', fontType=3)
     towerSelect = Dropdown(text="Tower Level", x = towerX*xMult, y = towerY*yMult, width = towerW*xMult, height = towerH*yMult, color = (0, 255, 0), function = towerLevelSelect, fontType = towerFont, dropFont = 3, rounding = math.trunc(5*xMult), dropdownAmount = len(towerList)-1, textList = towerList, event=event2)
+    autoWinnerSelect = Dropdown(text="Winning Alliance", x = winnerX*xMult, y = winnerY*yMult, width = winnerW*xMult, height = winnerH*yMult, color = (0, 255, 0), function = autoWinnerSelect, fontType = winnerFont, dropFont = 3, rounding = math.trunc(5*xMult), dropdownAmount = 3, textList = winnerList, event=event2)
     towerSelect.initDropped()
     robotStart.initDropped()
+    autoWinnerSelect.initDropped()
 
 def drawAutoMenu(fuelX, fuelY, fuelW, fuelH, fuelFont, displayX, displayY, displayW, displayH):
     #infinite parameters v2
@@ -499,25 +539,37 @@ def drawAutoMenu(fuelX, fuelY, fuelW, fuelH, fuelFont, displayX, displayY, displ
     global displayLevel
     autoFuelPlus1 = Button(text="+1", x = (fuelX+fuelW+25)*xMult, y = fuelY*yMult, width = fuelW*xMult, height = fuelH*yMult, color = (0, 170, 0), function = autoFuelPlus1Button, fontType = fuelFont, rounding = math.trunc(15*xMult))
     autoFuelMinus1 = Button(text="-1", x = (fuelX-fuelW-25)*xMult, y = fuelY*yMult, width = fuelW*xMult, height = fuelH*yMult, color = (170, 0, 0), function = autoFuelMinus1Button, fontType = fuelFont, rounding = math.trunc(15*xMult))
+    autoSwipesPlus1 = Button(text="+1", x = (fuelX+fuelW+25)*xMult, y = (fuelY+fuelH+50)*yMult, width = fuelW*xMult, height = fuelH*yMult, color = (0, 170, 0), function = autoSwipesPlus1Button, fontType = fuelFont, rounding = math.trunc(15*xMult))
+    autoSwipesMinus1 = Button(text="-1", x = (fuelX-fuelW-25)*xMult, y = (fuelY+fuelH+50)*yMult, width = fuelW*xMult, height = fuelH*yMult, color = (170, 0, 0), function = autoSwipesMinus1Button, fontType = fuelFont, rounding = math.trunc(15*xMult))
     displayLevel = Button(text=f'Tower Level: {towerLevel}', x = displayX*xMult, y = displayY*yMult, width = displayW*xMult, height = displayH*yMult, color = (0, 150, 0), function = empty, fontType = 2, rounding = math.trunc(15*xMult))
     displayStart = Button(text=f'Starting Position: {robotPos}', x = (displayX+(displayW)+25)*xMult, y = displayY*yMult, width = displayW*xMult, height = displayH*yMult, color = (0, 150, 0), function = empty, fontType = 2, rounding = math.trunc(15*xMult))
+    displayWinner = Button(text=f'Winning Alliance: {autoWinner}', x = (displayX+(displayW*2)+50)*xMult, y = displayY*yMult, width = displayW*xMult, height = displayH*yMult, color = (0, 150, 0), function = empty, fontType = 2, rounding = math.trunc(15*xMult))
     #check if clicked v2
     for event in pygame.event.get():
         event2 = event
         autoFuelPlus1.isClicked(event2)
         autoFuelMinus1.isClicked(event2)
+        autoSwipesPlus1.isClicked(event2)
+        autoSwipesMinus1.isClicked(event2)
         towerSelect.isClicked(event2)
         closeButton.isClicked(event2)
         towerCheck.isClicked(event2)
         robotStart.isClicked(event2)
+        autoWinnerSelect.isClicked(event2)
     screen.fill((100, 100, 100))
     autoFuelPlus1.draw(screen)
     autoFuelMinus1.draw(screen)
+    autoSwipesPlus1.draw(screen)
+    autoSwipesMinus1.draw(screen)
     towerSelect.draw(screen)
     closeButton.draw(screen)
     towerCheck.draw(screen)
     robotStart.draw(screen)
     displayLevel.draw(screen)
     displayStart.draw(screen)
+    autoWinnerSelect.draw(screen)
+    displayWinner.draw(screen)
     screen.blit(hugeFont.render(str(autoFuelCount), True, (0, 0, 0)), ((fuelX+(fuelW/3))*xMult, (fuelY+(fuelH/3))*yMult))
     screen.blit(boldFont.render("Auto Fuel Count", True, (0, 0, 0)), ((fuelX-(fuelW/2))*xMult, (fuelY-fuelH/2)*yMult))
+    screen.blit(hugeFont.render(str(autoSwipesCount), True, (0, 0, 0)), ((fuelX+(fuelW/3))*xMult, ((fuelY+(fuelH/3))+fuelH+50)*yMult))
+    screen.blit(boldFont.render("Auto Cycles Count", True, (0, 0, 0)), ((fuelX-(fuelW/1.75))*xMult, ((fuelY-fuelH/2)+fuelH+50)*yMult))

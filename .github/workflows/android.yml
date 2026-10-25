@@ -51,7 +51,7 @@ jobs:
     - name: File cleanup/free space so Buildozer gets enough room to work
       run: |
         mv phonePortrait.py main.py
-        rm -f desktop.py ipad.py
+        rm -f desktop.py
         sudo rm -rf /usr/local/.ghcup
         sudo rm -rf /opt/hostedtoolcache/CodeQL
         sudo rm -rf /usr/local/lib/android/sdk/ndk
@@ -64,8 +64,25 @@ jobs:
       run: |
         yes | buildozer android debug
   
-    - name: Upload APK
+    - name: Upload 1st APK
       uses: actions/upload-artifact@v4
       with:
         name: FRC-8724-Scout-APK-Debug
+        path: bin/*.apk
+
+    - name: Setup next build
+      run: |
+        rm -rf bin/*.apk
+        rm -f main.py
+        mv ipad.py main.py
+
+    - name: Build tablet APK
+      run: |
+        yes | buildozer android debug
+
+      # the APK uploads are intentionally split so that if the second build fails the first still gets uploaded.
+    - name: Upload 2nd APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: FRC-8724-Scout-APK-Tablet-Debug
         path: bin/*.apk
