@@ -320,10 +320,10 @@ class Checkbox:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.rect.collidepoint(event.pos):
                 # flip state of checkbox
-                if checks[self.id] == 0:
-                    checks[self.id] = 1
-                elif checks[self.id] == 1:
-                    checks[self.id] = 0
+                if checks[self.id] == False:
+                    checks[self.id] = True
+                elif checks[self.id] == True:
+                    checks[self.id] = False
 
 
 def exitButton():
@@ -673,6 +673,29 @@ def drawAutoMenu(fuelX, fuelY, fuelW, fuelH, fuelFont, displayX, displayY, displ
     screen.blit(hugeFont.render(str(autoSwipesCount), True, BLACK), ((fuelX+(fuelW/3))*xMult, ((fuelY+(fuelH/3))+fuelH+50)*yMult))
     screen.blit(boldFont.render("Auto Cycles Count", True, BLACK), ((fuelX-(fuelW/1.75))*xMult, ((fuelY-fuelH/2)+fuelH+50)*yMult))
 
+def initDropsTeleMenu(defenseX, defenseY, defenseW, defenseH, gatherX, gatherY, gatherW, gatherH):
+    global defenseCheck
+    global depotCheck
+    global outpostCheck
+    global neutralCheck
+    global oppositionCheck
+    global gatherY2
+    global gatherX2
+    global gatherW2
+    global gatherH2
+
+    # bad workaround to render text correctly
+    gatherX2 = gatherX
+    gatherY2 = gatherY
+    gatherW2 = gatherW
+    gatherH2 = gatherH
+
+    defenseCheck = Checkbox(x=defenseX*xMult, y=defenseY*yMult, width=defenseW*xMult, height=defenseH*yMult, color=WHITE, clickedColor=BLACK, dictId='defense', rounding=15, text='Defense?', fontType=3)
+    depotCheck = Checkbox(x=gatherX*xMult, y=gatherY*yMult, width=gatherW*xMult, height=gatherH*yMult, color=WHITE, clickedColor=BLACK, dictId='depot', rounding=15, text='Depot', fontType=3)
+    outpostCheck = Checkbox(x=gatherX*xMult, y=(gatherY+(gatherH)+25)*yMult, width=gatherW*xMult, height=gatherH*yMult, color=WHITE, clickedColor=BLACK, dictId='outpost', rounding=15, text='Outpost', fontType=3)
+    neutralCheck = Checkbox(x=gatherX*xMult, y=(gatherY+(gatherH*2)+50)*yMult, width=gatherW*xMult, height=gatherH*yMult, color=WHITE, clickedColor=BLACK, dictId='nzgather', rounding=15, text='Neutral Zone', fontType=3)
+    oppositionCheck = Checkbox(x=gatherX*xMult, y=(gatherY+(gatherH*3)+75)*yMult, width=gatherW*xMult, height=gatherH*yMult, color=WHITE, clickedColor=BLACK, dictId='azgather', rounding=15, text='Opposing AZ', fontType=3)
+
 def drawTeleopMenu(fuelX, fuelY, fuelW, fuelH, fuelFont, displayX, displayY, displayW, displayH, nextX, nextY, nextW, nextH):
     #infinite parameters v3
     # these parameters (for now) can and should be the exact same as drawAutoMenu() in the GUI code.
@@ -691,8 +714,13 @@ def drawTeleopMenu(fuelX, fuelY, fuelW, fuelH, fuelFont, displayX, displayY, dis
         teleSwipesPlus1.isClicked(event2)
         teleSwipesMinus1.isClicked(event2)
         closeButton.isClicked(event2)
-        teleSwipesPlus1.draw(screen)
-        teleSwipesMinus1.draw(screen)
+        teleSwipesPlus1.isClicked(event2)
+        teleSwipesMinus1.isClicked(event2)
+        defenseCheck.isClicked(event2)
+        depotCheck.isClicked(event2)
+        outpostCheck.isClicked(event2)
+        neutralCheck.isClicked(event2)
+        oppositionCheck.isClicked(event2)
     
     screen.fill(GRAY)
     teleFuelPlus1.draw(screen)
@@ -700,8 +728,14 @@ def drawTeleopMenu(fuelX, fuelY, fuelW, fuelH, fuelFont, displayX, displayY, dis
     closeButton.draw(screen)
     teleSwipesPlus1.draw(screen)
     teleSwipesMinus1.draw(screen)
+    defenseCheck.draw(screen)
+    depotCheck.draw(screen)
+    outpostCheck.draw(screen)
+    neutralCheck.draw(screen)
+    oppositionCheck.draw(screen)
 
     screen.blit(hugeFont.render(str(teleFuelCount), True, BLACK), ((fuelX+(fuelW/3))*xMult, (fuelY+(fuelH/3))*yMult))
     screen.blit(boldFont.render("Tele-op Fuel Count", True, BLACK), ((fuelX-(fuelW/1.8))*xMult, (fuelY-fuelH/2)*yMult))
     screen.blit(hugeFont.render(str(teleSwipesCount), True, BLACK), ((fuelX+(fuelW/3))*xMult, ((fuelY+(fuelH/3))+fuelH+50)*yMult))
     screen.blit(boldFont.render("Tele-op Cycles Count", True, BLACK), ((fuelX-(fuelW/1.65))*xMult, ((fuelY-fuelH/2)+fuelH+50)*yMult))
+    screen.blit(hugeFont.render("Gathered Fuel from...", True, BLACK), (gatherX2*xMult, (gatherY2-gatherH2)*yMult))

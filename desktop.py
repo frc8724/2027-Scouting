@@ -6,6 +6,7 @@ main.aspectRatio(1070, 600)
 main.initDropsMainMenu(0, 50, 150, 50, 2)
 main.initDropsMainMenu2(725, 50, 150, 50, 2, 360, 50, 150, 50, 2, 920, 50, 150, 50, 2)
 main.initDropsAutoMenu(400, 100, 200, 100, 3, 750, 50, 200, 50, 3, 100, 275, 250, 50, 3)
+main.initDropsTeleMenu(125, 25, 50, 50, 375, 75, 75, 50)
 while True:  
 
     if main.menuNumber == 1:
