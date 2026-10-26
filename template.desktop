@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=FRC 8724 Scouting
+Comment=Scouting app for the 2027 FRC season.
+Exec=sh -c "cd \"\$(dirname \"%k\")\" && ./desktop"
+Icon=utilities-terminal
+Terminal=false
+Categories=App;

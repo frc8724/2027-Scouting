@@ -17,7 +17,7 @@ def aspectRatio(x, y):
     #screen setup
     global screen
     if 'ANDROID_ARGUMENT' in os.environ:
-        # workaround that (should) get rid of the title bar.
+        # workaround that gets rid of the bottom actions bar cutoff, but not the top camera cutout.
         screen = pygame.display.set_mode((x2, y2), pygame.FULLSCREEN)
     else:
         # for windows/linux, causes a borderless fullscreen effect.
@@ -65,6 +65,9 @@ def getWriteDir():
         # Android, writes to /storage/emulated/0/Documents/FRC_Scouting_Output on most devics.
         writeDir = Path(os.environ['EXTERNAL_STORAGE']) / 'Documents' / 'FRC_Scouting_Output'
         #setup config file
+        #config file currently has no purpose, may be used to store The Blue Alliance API keys and theme data
+        #could also be used to cache the scout's name and maybe even Statbotics data if the team can get a strong enough internet connection before the competition.
+        #this config file also gets deleted upon app uninstall, so a permament keystore is a must.
         configFile = Path("/data/data/org.frc8724.scouting/files/app/config.txt")
     else:
         # Desktop, writes to C:/Users/<your name>/FRC_Scouting_Output on Windows and ~/FRC_Scouting_Output on Linux.
@@ -106,8 +109,13 @@ autoSwipesCount = 0
 towerLevel = 0
 robotPos = 'none'
 autoWinner = 'none'
+global teleFuelCount
+teleFuelCount = 0
+global teleSwipesCount
+teleSwipesCount = 0
 
 # define colors *once* for ease-of-use in adding new elements. also the default theme
+# themes are not implemented yet, but they may be in the future.
 global BLACK
 global WHITE
 global RED
@@ -339,6 +347,7 @@ def matchSelector():
     # this bypass only works because the function is called mid-draw by the dropdown, specifically the sub-frame that has the button that was clicked as the latest thing drawn.
     # this is required because the dropdown object's draw() function is destructive to the data that's not being currently rendered.
     # ' '.join() is to strip the dictionary label off.
+    # all of the dropdown selector functions work in this same way.
     if ' '.join(dropRect["Match"]) == 'placeholder':
         pass
     else:
@@ -454,6 +463,30 @@ def startTeleopButton():
         # yes, it's only visible in the terminal.
         print("Select all values first.")
 
+def teleFuelPlus1Button():
+    global teleFuelCount
+    teleFuelCount += 1
+
+def teleFuelMinus1Button():
+    global teleFuelCount
+    if teleFuelCount >= 1:
+        # check so that the counter can't go below 0
+        teleFuelCount -= 1
+    else:
+        pass
+
+def teleSwipesPlus1Button():
+    global teleSwipesCount
+    teleSwipesCount += 1
+
+def teleSwipesMinus1Button():
+    global teleSwipesCount
+    if teleSwipesCount >= 1:
+        # check so that the counter can't go below 0
+        teleSwipesCount -= 1
+    else:
+        pass
+
 def empty():
     #for static "display" buttons that need to have a function assigned to them, but shouldn't do anything when clicked.
     pass
@@ -471,6 +504,7 @@ matchList[6] = ['61', '62', '63', '64', '65', '66', '67', '68', '69', '70', 'pla
 batchList = ['1', '2', '3', '4', '5', '6', '7', 'do not select']
 teamList = [0, 0, 0, 0, 0, 0, 0]
 #replace these with actual team lists before compile
+#the lists can be pruned if needed, the dropdowns automatically handle them.
 teamList[0] = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'placeholder']
 teamList[1] = ['11', '12', '13', '14', '15', '16', '17', '18', '19', '20', 'placeholder']
 teamList[2] = ['21', '22', '23', '24', '25', '26', '27', '28', '29', '30', 'placeholder']
@@ -499,6 +533,7 @@ def drawMainMenu(closeX, closeY, closeW, closeH, startX, startY, startW, startH,
     global displayTeam
     global displayScout
     global displayPosition
+    
     closeButton = Button(text="Close", x = closeX*xMult, y = closeY*yMult, width = closeW*xMult, height = closeH*yMult, color = RED, function = exitButton, fontType = 2, rounding = math.trunc(15*xMult))
     startButton = Button(text="Start Match", x = startX*xMult, y = startY*yMult, width = startW*xMult, height = startH*yMult, color = BLUE, function = startMatchButton, fontType = 3, rounding = math.trunc(50*xMult))
     # "display" buttons that do nothing because the dropdowns can update any text on-screen *except* its own
@@ -506,6 +541,7 @@ def drawMainMenu(closeX, closeY, closeW, closeH, startX, startY, startW, startH,
     displayTeam = Button(text=f'Team #: {teamNumber}', x = (displayX+(displayW*2)+50)*xMult, y = displayY*yMult, width = displayW*xMult, height = displayH*yMult, color = DARKERGREEN, function = empty, fontType = 2, rounding = math.trunc(15*xMult))
     displayScout = Button(text=f'Scout: {scoutName}', x = (displayX+(displayW*3)+75)*xMult, y = displayY*yMult, width = displayW*xMult, height = displayH*yMult, color = DARKERGREEN, function = empty, fontType = 2, rounding = math.trunc(15*xMult))
     displayPosition = Button(text=f'Position: {robotPosition}', x = (displayX+displayW+25)*xMult, y = displayY*yMult, width = displayW*xMult, height = displayH*yMult, color = DARKERGREEN, function = empty, fontType = 2, rounding = math.trunc(15*xMult))
+    
     #check if clicked
     for event in pygame.event.get():
         event2 = event
@@ -517,6 +553,7 @@ def drawMainMenu(closeX, closeY, closeW, closeH, startX, startY, startW, startH,
         teamBatch.isClicked(event2)
         positionSelect.isClicked(event2)
         scoutSelect.isClicked(event2)
+
     #draw the things
     screen.fill(GRAY)
     matchSelectDrop.draw(screen)
@@ -531,7 +568,9 @@ def drawMainMenu(closeX, closeY, closeW, closeH, startX, startY, startW, startH,
     displayTeam.draw(screen)
     displayScout.draw(screen)
     displayPosition.draw(screen)
+
     screen.blit(pygame.transform.scale(logo, (logoW*xMult, logoH*yMult)), (0, 0))
+
     matchSelectDrop.list = matchList[selectedBatch-1]
     teamSelectDrop.list = teamList[selectedBatch2-1]
 
@@ -540,9 +579,12 @@ def initDropsMainMenu(matchX, matchY, matchW, matchH, matchFont):
     global matchSelectDrop
     global matchBatch
     global selectedBatch
+
     selectedBatch = 1
+
     matchSelectDrop = Dropdown(text="Match", x = matchX*xMult, y = matchY*yMult, width = matchW*xMult, height = matchH*yMult, color = GREEN, function = matchSelector, fontType = matchFont, dropFont = 2, rounding = math.trunc(5*xMult), dropdownAmount = len(matchList[selectedBatch-1])-1, textList = matchList[selectedBatch-1], event=event2)
     matchBatch = Dropdown(text="Match Chunk", x = (matchX+matchW+25)*xMult, y = matchY*yMult, width = matchW*xMult, height = matchH*yMult, color = GREEN, function = matchBatchSelector, fontType = matchFont, dropFont = 2, rounding = math.trunc(5*xMult), dropdownAmount = len(batchList)-1, textList = batchList, event=event2)
+    
     matchSelectDrop.initDropped()
     matchBatch.initDropped()
 
@@ -553,12 +595,15 @@ def initDropsMainMenu2(teamX, teamY, teamW, teamH, teamFont, positionX, position
     global positionSelect
     global scoutSelect
     global teamSelectDrop
+
     event3 = event2
     selectedBatch2 = 1
+
     teamSelectDrop = Dropdown(text="Team", x = teamX*xMult, y = teamY*yMult, width = teamW*xMult, height = teamH*yMult, color = GREEN, function = teamSelector, fontType = teamFont, dropFont = 2, rounding = math.trunc(5*xMult), dropdownAmount = len(teamList[selectedBatch2-1])-1, textList = teamList[selectedBatch2-1], event=event2)
     teamBatch = Dropdown(text="Team Chunk", x = (teamX-teamW-25)*xMult, y = teamY*yMult, width = teamW*xMult, height = teamH*yMult, color = GREEN, function = teamBatchSelector, fontType = teamFont, dropFont = 2, rounding = math.trunc(5*xMult), dropdownAmount = len(batchList2)-1, textList = batchList2, event=event2)
     positionSelect = Dropdown(text="Position", x = positionX*xMult, y = positionY*yMult, width = positionW*xMult, height = positionH*yMult, color = GREEN, function = positionSelector, fontType = positionFont, dropFont = 2, rounding = math.trunc(5*xMult), dropdownAmount = 6, textList = positionList, event=event2)
     scoutSelect = Dropdown(text="Scout", x = scoutX*xMult, y = scoutY*yMult, width = scoutW*xMult, height = scoutH*yMult, color = GREEN, function = scoutSelector, fontType = scoutFont, dropFont = 2, rounding = math.trunc(5*xMult), dropdownAmount = len(scoutList)-1, textList = scoutList, event=event2)
+    
     teamSelectDrop.initDropped()
     teamBatch.initDropped()
     positionSelect.initDropped()
@@ -569,10 +614,12 @@ def initDropsAutoMenu(towerX, towerY, towerW, towerH, towerFont, startX, startY,
     global towerCheck
     global robotStart
     global autoWinnerSelect
+
     robotStart = Dropdown(text="Start Position", x = startX*xMult, y = startY*yMult, width = startW*xMult, height = startH*yMult, color = GREEN, function = robotPosSelect, fontType = startFont, dropFont = startFont, rounding = math.trunc(5*xMult), dropdownAmount = 5, textList = startPositions, event=event2)
     towerCheck = Checkbox(x=towerX*xMult, y=(towerY-(towerH/2))*yMult, width=(towerW/3)*xMult, height=(towerH/3)*yMult, color=WHITE, clickedColor=BLACK, dictId='tower', rounding=15, text='Climber?', fontType=3)
     towerSelect = Dropdown(text="Tower Level", x = towerX*xMult, y = towerY*yMult, width = towerW*xMult, height = towerH*yMult, color = GREEN, function = towerLevelSelect, fontType = towerFont, dropFont = 3, rounding = math.trunc(5*xMult), dropdownAmount = len(towerList)-1, textList = towerList, event=event2)
     autoWinnerSelect = Dropdown(text="Winning Alliance", x = winnerX*xMult, y = winnerY*yMult, width = winnerW*xMult, height = winnerH*yMult, color = GREEN, function = autoWinnerSelect, fontType = winnerFont, dropFont = 3, rounding = math.trunc(5*xMult), dropdownAmount = 3, textList = winnerList, event=event2)
+    
     towerSelect.initDropped()
     robotStart.initDropped()
     autoWinnerSelect.initDropped()
@@ -620,6 +667,7 @@ def drawAutoMenu(fuelX, fuelY, fuelW, fuelH, fuelFont, displayX, displayY, displ
     autoWinnerSelect.draw(screen)
     displayWinner.draw(screen)
     startTeleop.draw(screen)
+
     screen.blit(hugeFont.render(str(autoFuelCount), True, BLACK), ((fuelX+(fuelW/3))*xMult, (fuelY+(fuelH/3))*yMult))
     screen.blit(boldFont.render("Auto Fuel Count", True, BLACK), ((fuelX-(fuelW/2))*xMult, (fuelY-fuelH/2)*yMult))
     screen.blit(hugeFont.render(str(autoSwipesCount), True, BLACK), ((fuelX+(fuelW/3))*xMult, ((fuelY+(fuelH/3))+fuelH+50)*yMult))
@@ -627,19 +675,33 @@ def drawAutoMenu(fuelX, fuelY, fuelW, fuelH, fuelFont, displayX, displayY, displ
 
 def drawTeleopMenu(fuelX, fuelY, fuelW, fuelH, fuelFont, displayX, displayY, displayW, displayH, nextX, nextY, nextW, nextH):
     #infinite parameters v3
+    # these parameters (for now) can and should be the exact same as drawAutoMenu() in the GUI code.
     global autoFuelPlus1
     global autofuelMinus1
     teleFuelPlus1 = Button(text="+1", x = (fuelX+fuelW+25)*xMult, y = fuelY*yMult, width = fuelW*xMult, height = fuelH*yMult, color = DARKGREEN, function = teleFuelPlus1Button, fontType = fuelFont, rounding = math.trunc(15*xMult))
     teleFuelMinus1 = Button(text="-1", x = (fuelX-fuelW-25)*xMult, y = fuelY*yMult, width = fuelW*xMult, height = fuelH*yMult, color = DARKRED, function = teleFuelMinus1Button, fontType = fuelFont, rounding = math.trunc(15*xMult))
-    
+    teleSwipesPlus1 = Button(text="+1", x = (fuelX+fuelW+25)*xMult, y = (fuelY+fuelH+50)*yMult, width = fuelW*xMult, height = fuelH*yMult, color = DARKGREEN, function = teleSwipesPlus1Button, fontType = fuelFont, rounding = math.trunc(15*xMult))
+    teleSwipesMinus1 = Button(text="-1", x = (fuelX-fuelW-25)*xMult, y = (fuelY+fuelH+50)*yMult, width = fuelW*xMult, height = fuelH*yMult, color = DARKRED, function = teleSwipesMinus1Button, fontType = fuelFont, rounding = math.trunc(15*xMult))
+
     # check if clicked v3
     for event in pygame.event.get():
         event2 = event
         teleFuelPlus1.isClicked(event2)
         teleFuelMinus1.isClicked(event2)
-
+        teleSwipesPlus1.isClicked(event2)
+        teleSwipesMinus1.isClicked(event2)
+        closeButton.isClicked(event2)
+        teleSwipesPlus1.draw(screen)
+        teleSwipesMinus1.draw(screen)
+    
     screen.fill(GRAY)
     teleFuelPlus1.draw(screen)
     teleFuelMinus1.draw(screen)
-    screen.blit(hugeFont.render(str(autoFuelCount), True, BLACK), ((fuelX+(fuelW/3))*xMult, (fuelY+(fuelH/3))*yMult))
-    screen.blit(boldFont.render("Auto Fuel Count", True, BLACK), ((fuelX-(fuelW/2))*xMult, (fuelY-fuelH/2)*yMult))
+    closeButton.draw(screen)
+    teleSwipesPlus1.draw(screen)
+    teleSwipesMinus1.draw(screen)
+
+    screen.blit(hugeFont.render(str(teleFuelCount), True, BLACK), ((fuelX+(fuelW/3))*xMult, (fuelY+(fuelH/3))*yMult))
+    screen.blit(boldFont.render("Tele-op Fuel Count", True, BLACK), ((fuelX-(fuelW/1.8))*xMult, (fuelY-fuelH/2)*yMult))
+    screen.blit(hugeFont.render(str(teleSwipesCount), True, BLACK), ((fuelX+(fuelW/3))*xMult, ((fuelY+(fuelH/3))+fuelH+50)*yMult))
+    screen.blit(boldFont.render("Tele-op Cycles Count", True, BLACK), ((fuelX-(fuelW/1.65))*xMult, ((fuelY-fuelH/2)+fuelH+50)*yMult))

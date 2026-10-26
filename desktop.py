@@ -14,6 +14,9 @@ while True:
     elif main.menuNumber == 2:
         main.drawAutoMenu(200, 100, 50, 50, 2, 70, 0, 250, 45, 650, 375, 400, 200)
 
+    elif main.menuNumber == 3:
+        main.drawTeleopMenu(200, 100, 50, 50, 2, 70, 0, 250, 45, 650, 375, 400, 200)
+
     print(main.menuNumber)
     main.pygame.display.flip()
     main.clock.tick(60)

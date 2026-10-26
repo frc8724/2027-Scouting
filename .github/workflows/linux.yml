@@ -1,0 +1,47 @@
+name: Compile for Linux
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        pip install pygame pyinstaller
+
+    - name: Build with PyInstaller
+      run: |
+        pyinstaller desktop.py --onefile --noconsole --name "2027-Scouting"
+
+    - name: Prepare bundle
+      run: |
+        mkdir -p frc-scout-linux
+        mv dist/2027-Scouting frc-scout-linux/
+        cp -r assets frc-scout-linux/
+        cp template.desktop my-app-linux/FRC-8724-Scout.desktop
+        chmod +x frc-scout-linux/2027-Scouting
+        chmod +x frc-scout-linux/FRC-8724-Scout.desktop
+
+    - name: Compress bundle
+      run: tar -czvf FRC-8724-Scout.tar.gz frc-scout-linux
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: FRC-8724-Scout-Linux-Debug
+        path: FRC-8724-Scout.tar.gz
