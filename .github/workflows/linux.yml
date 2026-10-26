@@ -33,7 +33,7 @@ jobs:
         mkdir -p frc-scout-linux
         mv dist/2027-Scouting frc-scout-linux/
         cp -r assets frc-scout-linux/
-        cp template.desktop my-app-linux/FRC-8724-Scout.desktop
+        cp template.desktop frc-scout-linux/FRC-8724-Scout.desktop
         chmod +x frc-scout-linux/2027-Scouting
         chmod +x frc-scout-linux/FRC-8724-Scout.desktop
 
