@@ -338,6 +338,10 @@ def startMatchButton():
     if matchNumber2 != "none" and teamNumber != "none" and robotPosition != "none" and scoutName != "John Doe":
         #make sure to select the values!!
         menuNumber = 2
+        global remainingTime
+        global frames
+        remainingTime = 20
+        frames = 0
     else:
         # yes, it's only visible in the terminal.
         print("Select all values first.")
@@ -456,7 +460,7 @@ def autoWinnerSelect():
 def startTeleopButton():
     print("teleop started")
     global menuNumber
-    if robotPos != "none" and autoWinner != "none":
+    if robotPos != "none" and autoWinner != "none" and remainingTime == 0:
         #make sure to select the values!!
         menuNumber = 3
     else:
@@ -624,12 +628,15 @@ def initDropsAutoMenu(towerX, towerY, towerW, towerH, towerFont, startX, startY,
     robotStart.initDropped()
     autoWinnerSelect.initDropped()
 
-def drawAutoMenu(fuelX, fuelY, fuelW, fuelH, fuelFont, displayX, displayY, displayW, displayH, nextX, nextY, nextW, nextH):
+def drawAutoMenu(fuelX, fuelY, fuelW, fuelH, fuelFont, displayX, displayY, displayW, displayH, nextX, nextY, nextW, nextH, timeX, timeY):
     #infinite parameters v2
     global autoFuelPlus1
     global autofuelMinus1
     global displayStart
     global displayLevel
+    global remainingTime
+    global frames
+
     autoFuelPlus1 = Button(text="+1", x = (fuelX+fuelW+25)*xMult, y = fuelY*yMult, width = fuelW*xMult, height = fuelH*yMult, color = DARKGREEN, function = autoFuelPlus1Button, fontType = fuelFont, rounding = math.trunc(15*xMult))
     autoFuelMinus1 = Button(text="-1", x = (fuelX-fuelW-25)*xMult, y = fuelY*yMult, width = fuelW*xMult, height = fuelH*yMult, color = DARKRED, function = autoFuelMinus1Button, fontType = fuelFont, rounding = math.trunc(15*xMult))
     autoSwipesPlus1 = Button(text="+1", x = (fuelX+fuelW+25)*xMult, y = (fuelY+fuelH+50)*yMult, width = fuelW*xMult, height = fuelH*yMult, color = DARKGREEN, function = autoSwipesPlus1Button, fontType = fuelFont, rounding = math.trunc(15*xMult))
@@ -672,6 +679,20 @@ def drawAutoMenu(fuelX, fuelY, fuelW, fuelH, fuelFont, displayX, displayY, displ
     screen.blit(boldFont.render("Auto Fuel Count", True, BLACK), ((fuelX-(fuelW/2))*xMult, (fuelY-fuelH/2)*yMult))
     screen.blit(hugeFont.render(str(autoSwipesCount), True, BLACK), ((fuelX+(fuelW/3))*xMult, ((fuelY+(fuelH/3))+fuelH+50)*yMult))
     screen.blit(boldFont.render("Auto Cycles Count", True, BLACK), ((fuelX-(fuelW/1.75))*xMult, ((fuelY-fuelH/2)+fuelH+50)*yMult))
+    if remainingTime >= 10:
+        screen.blit(hugeFont.render(f'00:{remainingTime}', True, BLACK), (timeX*xMult, timeY*yMult))
+    else:
+        screen.blit(hugeFont.render(f'00:0{remainingTime}', True, BLACK), (timeX*xMult, timeY*yMult))
+
+    # update match timer
+    if frames < 60:
+        frames += 1
+    else:
+        if remainingTime > 0:
+            frames = 0
+            remainingTime -= 1
+        else:
+            pass
 
 def initDropsTeleMenu(defenseX, defenseY, defenseW, defenseH, gatherX, gatherY, gatherW, gatherH):
     global defenseCheck

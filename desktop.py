@@ -13,7 +13,7 @@ while True:
         main.drawMainMenu(1020, 0, 50, 25, 185, 475, 500, 100, 45, 45, 100, 0, 200, 45)
 
     elif main.menuNumber == 2:
-        main.drawAutoMenu(200, 100, 50, 50, 2, 70, 0, 250, 45, 650, 375, 400, 200)
+        main.drawAutoMenu(200, 100, 50, 50, 2, 70, 0, 250, 45, 650, 375, 400, 200, 930, 5)
 
     elif main.menuNumber == 3:
         main.drawTeleopMenu(200, 100, 50, 50, 2, 70, 0, 250, 45, 650, 375, 400, 200)
