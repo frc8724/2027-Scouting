@@ -78,6 +78,7 @@ def getWriteDir():
         theme = int(configFile.read_text().strip())
     else:
         # usually first run
+        writeDir.mkdir(parents=True, exist_ok=True)
         with open(configFile, "w") as f:
             f.write("1")
         theme = int(configFile.read_text().strip())
@@ -125,6 +126,7 @@ global GREEN
 global DARKGREEN
 global DARKERGREEN
 global GRAY
+global DARKBLUE
 BLACK = (0, 0, 0)
 WHITE  = (255, 255, 255)
 RED = (255, 0, 0)
@@ -134,6 +136,7 @@ GREEN = (0, 255, 0)
 DARKGREEN = (0, 170, 0)
 DARKERGREEN = (0, 150, 0)
 GRAY = (100, 100, 100)
+DARKBLUE = (0, 0, 170)
 
 def fontDef(fontVar, fontType, passedText="well that's not great"):
     #necessary for optimization; makes it so the fonts (at least for buttons and checkboxes) are only defined on startup and not every frame.
@@ -460,9 +463,22 @@ def autoWinnerSelect():
 def startTeleopButton():
     print("teleop started")
     global menuNumber
+    global remainingTime
     if robotPos != "none" and autoWinner != "none" and remainingTime == 0:
         #make sure to select the values!!
         menuNumber = 3
+        global frames
+        global telePeriod
+        # transition is 3s
+        remainingTime = 3
+        frames = 0
+        telePeriod = 1
+        # 1 = transition (3s)
+        # 2 = both active (10s)
+        # 3, 5 = auto loser active (25s each)
+        # 4, 6 = auto winner active (25s each)
+        global timerColor
+        timerColor = BLACK
     else:
         # yes, it's only visible in the terminal.
         print("Select all values first.")
@@ -636,6 +652,11 @@ def drawAutoMenu(fuelX, fuelY, fuelW, fuelH, fuelFont, displayX, displayY, displ
     global displayLevel
     global remainingTime
     global frames
+    global timeX2
+    global timeY2
+    
+    timeX2 = timeX
+    timeY2 = timeY
 
     autoFuelPlus1 = Button(text="+1", x = (fuelX+fuelW+25)*xMult, y = fuelY*yMult, width = fuelW*xMult, height = fuelH*yMult, color = DARKGREEN, function = autoFuelPlus1Button, fontType = fuelFont, rounding = math.trunc(15*xMult))
     autoFuelMinus1 = Button(text="-1", x = (fuelX-fuelW-25)*xMult, y = fuelY*yMult, width = fuelW*xMult, height = fuelH*yMult, color = DARKRED, function = autoFuelMinus1Button, fontType = fuelFont, rounding = math.trunc(15*xMult))
@@ -685,6 +706,7 @@ def drawAutoMenu(fuelX, fuelY, fuelW, fuelH, fuelFont, displayX, displayY, displ
         screen.blit(hugeFont.render(f'00:0{remainingTime}', True, BLACK), (timeX*xMult, timeY*yMult))
 
     # update match timer
+    # app runs at a locked 60 fps, may add delta time in future for *really* slow devices.
     if frames < 60:
         frames += 1
     else:
@@ -694,34 +716,59 @@ def drawAutoMenu(fuelX, fuelY, fuelW, fuelH, fuelFont, displayX, displayY, displ
         else:
             pass
 
-def initDropsTeleMenu(defenseX, defenseY, defenseW, defenseH, gatherX, gatherY, gatherW, gatherH):
+def initDropsTeleMenu(defenseX, defenseY, defenseW, defenseH, gatherX, gatherY, gatherW, gatherH, typeX, typeY, typeW, typeH):
     global defenseCheck
     global depotCheck
     global outpostCheck
     global neutralCheck
     global oppositionCheck
+    global blockDefCheck
+    global hitDefCheck
+    global neutralDefCheck
+    global oppDefCheck
     global gatherY2
     global gatherX2
     global gatherW2
     global gatherH2
+    global typeX2
+    global typeY2
+    global typeW2
+    global typeH2
+    global timerColor
+    global telePeriod
 
     # bad workaround to render text correctly
     gatherX2 = gatherX
     gatherY2 = gatherY
     gatherW2 = gatherW
     gatherH2 = gatherH
+    typeX2 = typeX
+    typeY2 = typeY
+    typeW2 = typeW
+    typeH2 = typeH
 
     defenseCheck = Checkbox(x=defenseX*xMult, y=defenseY*yMult, width=defenseW*xMult, height=defenseH*yMult, color=WHITE, clickedColor=BLACK, dictId='defense', rounding=15, text='Defense?', fontType=3)
     depotCheck = Checkbox(x=gatherX*xMult, y=gatherY*yMult, width=gatherW*xMult, height=gatherH*yMult, color=WHITE, clickedColor=BLACK, dictId='depot', rounding=15, text='Depot', fontType=3)
     outpostCheck = Checkbox(x=gatherX*xMult, y=(gatherY+(gatherH)+25)*yMult, width=gatherW*xMult, height=gatherH*yMult, color=WHITE, clickedColor=BLACK, dictId='outpost', rounding=15, text='Outpost', fontType=3)
     neutralCheck = Checkbox(x=gatherX*xMult, y=(gatherY+(gatherH*2)+50)*yMult, width=gatherW*xMult, height=gatherH*yMult, color=WHITE, clickedColor=BLACK, dictId='nzgather', rounding=15, text='Neutral Zone', fontType=3)
     oppositionCheck = Checkbox(x=gatherX*xMult, y=(gatherY+(gatherH*3)+75)*yMult, width=gatherW*xMult, height=gatherH*yMult, color=WHITE, clickedColor=BLACK, dictId='azgather', rounding=15, text='Opposing AZ', fontType=3)
+    blockDefCheck = Checkbox(x=typeX*xMult, y=typeY*yMult, width=typeW*xMult, height=typeH*yMult, color=WHITE, clickedColor=BLACK, dictId='blockdef', rounding=15, text='Blocking Opponent', fontType=3)
+    hitDefCheck = Checkbox(x=typeX*xMult, y=(typeY+(typeH)+25)*yMult, width=typeW*xMult, height=typeH*yMult, color=WHITE, clickedColor=BLACK, dictId='hitdef', rounding=15, text='Hitting Opponent', fontType=3)
+    neutralDefCheck = Checkbox(x=typeX*xMult, y=(typeY+(typeH*2)+50)*yMult, width=typeW*xMult, height=typeH*yMult, color=WHITE, clickedColor=BLACK, dictId='nzdef', rounding=15, text='General NZ', fontType=3)
+    oppDefCheck = Checkbox(x=typeX*xMult, y=(typeY+(typeH*3)+75)*yMult, width=typeW*xMult, height=typeH*yMult, color=WHITE, clickedColor=BLACK, dictId='azdef', rounding=15, text='General AZ', fontType=3)
 
 def drawTeleopMenu(fuelX, fuelY, fuelW, fuelH, fuelFont, displayX, displayY, displayW, displayH, nextX, nextY, nextW, nextH):
     #infinite parameters v3
     # these parameters (for now) can and should be the exact same as drawAutoMenu() in the GUI code.
     global autoFuelPlus1
     global autofuelMinus1
+    global remainingTime
+    global frames
+    global timeX
+    global timeY
+    global timerColor
+    global telePeriod
+
     teleFuelPlus1 = Button(text="+1", x = (fuelX+fuelW+25)*xMult, y = fuelY*yMult, width = fuelW*xMult, height = fuelH*yMult, color = DARKGREEN, function = teleFuelPlus1Button, fontType = fuelFont, rounding = math.trunc(15*xMult))
     teleFuelMinus1 = Button(text="-1", x = (fuelX-fuelW-25)*xMult, y = fuelY*yMult, width = fuelW*xMult, height = fuelH*yMult, color = DARKRED, function = teleFuelMinus1Button, fontType = fuelFont, rounding = math.trunc(15*xMult))
     teleSwipesPlus1 = Button(text="+1", x = (fuelX+fuelW+25)*xMult, y = (fuelY+fuelH+50)*yMult, width = fuelW*xMult, height = fuelH*yMult, color = DARKGREEN, function = teleSwipesPlus1Button, fontType = fuelFont, rounding = math.trunc(15*xMult))
@@ -742,6 +789,10 @@ def drawTeleopMenu(fuelX, fuelY, fuelW, fuelH, fuelFont, displayX, displayY, dis
         outpostCheck.isClicked(event2)
         neutralCheck.isClicked(event2)
         oppositionCheck.isClicked(event2)
+        blockDefCheck.isClicked(event2)
+        hitDefCheck.isClicked(event2)
+        neutralDefCheck.isClicked(event2)
+        oppDefCheck.isClicked(event2)
     
     screen.fill(GRAY)
     teleFuelPlus1.draw(screen)
@@ -754,9 +805,91 @@ def drawTeleopMenu(fuelX, fuelY, fuelW, fuelH, fuelFont, displayX, displayY, dis
     outpostCheck.draw(screen)
     neutralCheck.draw(screen)
     oppositionCheck.draw(screen)
+    blockDefCheck.draw(screen)
+    hitDefCheck.draw(screen)
+    neutralDefCheck.draw(screen)
+    oppDefCheck.draw(screen)
 
     screen.blit(hugeFont.render(str(teleFuelCount), True, BLACK), ((fuelX+(fuelW/3))*xMult, (fuelY+(fuelH/3))*yMult))
     screen.blit(boldFont.render("Tele-op Fuel Count", True, BLACK), ((fuelX-(fuelW/1.8))*xMult, (fuelY-fuelH/2)*yMult))
     screen.blit(hugeFont.render(str(teleSwipesCount), True, BLACK), ((fuelX+(fuelW/3))*xMult, ((fuelY+(fuelH/3))+fuelH+50)*yMult))
     screen.blit(boldFont.render("Tele-op Cycles Count", True, BLACK), ((fuelX-(fuelW/1.65))*xMult, ((fuelY-fuelH/2)+fuelH+50)*yMult))
     screen.blit(hugeFont.render("Gathered Fuel from...", True, BLACK), (gatherX2*xMult, (gatherY2-gatherH2)*yMult))
+    screen.blit(hugeFont.render("Defense Types", True, BLACK), (typeX2*xMult, (typeY2-typeH2)*yMult))
+
+    if remainingTime >= 10:
+        screen.blit(hugeFont.render(f'00:{remainingTime}', True, timerColor), (timeX2*xMult, timeY2*yMult))
+    else:
+        screen.blit(hugeFont.render(f'00:0{remainingTime}', True, timerColor), (timeX2*xMult, timeY2*yMult))
+
+    # another timer for tele-op. this one flips colors based on the alliance that has an active hub.
+    if frames < 60:
+        frames += 1
+    else:
+        if remainingTime > 0:
+            frames = 0
+            remainingTime -= 1
+            print(remainingTime)
+        else:
+            if telePeriod == 1:
+                # transition period
+                remainingTime = 10
+                telePeriod = 2
+
+            elif telePeriod == 2:
+                # both alliances active
+                remainingTime = 25
+                if autoWinner == "Red":
+                    telePeriod = 3
+                    timerColor = RED
+                elif autoWinner == "Blue":
+                    telePeriod = 3
+                    timerColor = DARKBLUE
+                else:
+                    # nobody knows who will be active next so give up on the colors
+                    telePeriod = 3
+                    timerColor = BLACK
+
+            elif telePeriod == 3:
+                # auto loser active
+                remainingTime = 25
+                if autoWinner == "Red":
+                    telePeriod = 4
+                    timerColor = DARKBLUE
+                elif autoWinner == "Blue":
+                    telePeriod = 4
+                    timerColor = RED
+                else:
+                    # shouldn't have to change the color but i'll do it anyways
+                    telePeriod = 4
+                    timerColor = BLACK
+
+            elif telePeriod == 4:
+                remainingTime = 25
+                if autoWinner == "Red":
+                    telePeriod = 5
+                    timerColor = RED
+                elif autoWinner == "Blue":
+                    telePeriod = 5
+                    timerColor = DARKBLUE
+                else:
+                    # shouldn't have to change the color but i'll do it anyways
+                    telePeriod = 3
+                    timerColor = BLACK
+
+            elif telePeriod == 5:
+                remainingTime = 25
+                if autoWinner == "Red":
+                    telePeriod = 6
+                    timerColor = DARKBLUE
+                elif autoWinner == "Blue":
+                    telePeriod = 6
+                    timerColor = RED
+                else:
+                    # shouldn't have to change the color but i'll do it anyways
+                    telePeriod = 4
+                    timerColor = BLACK
+
+            else:
+                # endgame time!!
+                timerColor = BLACK
