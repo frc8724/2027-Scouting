@@ -114,6 +114,8 @@ global teleFuelCount
 teleFuelCount = 0
 global teleSwipesCount
 teleSwipesCount = 0
+intakeType = 'none'
+shooterType = 'none'
 
 # define colors *once* for ease-of-use in adding new elements. also the default theme
 # themes are not implemented yet, but they may be in the future.
@@ -507,6 +509,22 @@ def teleSwipesMinus1Button():
     else:
         pass
 
+def intakeTypeSelect():
+    global intakeType
+    if ' '.join(dropRect["Type of Intake"]) == 'placeholder':
+        pass
+    else:
+        intakeType = ' '.join(dropRect["Type of Intake"])
+        intakeTypeDrop.dropped = 0
+
+def shooterTypeSelect():
+    global shooterType
+    if ' '.join(dropRect["Type of Shooter"]) == 'placeholder':
+        pass
+    else:
+        shooterType = ' '.join(dropRect["Type of Shooter"])
+        shooterTypeDrop.dropped = 0
+
 def empty():
     #for static "display" buttons that need to have a function assigned to them, but shouldn't do anything when clicked.
     pass
@@ -538,6 +556,8 @@ scoutList = ["Default Scout", "New Scout", "Scouts Go", "Here In", "Production P
 towerList = ['1', '2', '3', 'placeholder']
 startPositions = ['Left Trench', 'Left Bump', "Hub", 'Right Bump', 'Right Trench', 'placeholder']
 winnerList = ['Red', 'Blue', 'Tie', "placeholder"]
+intakeList = ['Over Bumper', 'Between Bumper', 'No Intake', 'placeholder']
+shooterList = ['Single Hood', 'Double Hood', 'Turret', 'No Shooter', 'placeholder']
 
 def testTheValues():
     with open(writeDir / f'{matchNumber2}.csv', 'w', newline='') as csvfile:
@@ -674,7 +694,8 @@ def drawAutoMenu(fuelX, fuelY, fuelW, fuelH, fuelFont, displayX, displayY, displ
         autoFuelMinus1.isClicked(event2)
         autoSwipesPlus1.isClicked(event2)
         autoSwipesMinus1.isClicked(event2)
-        towerSelect.isClicked(event2)
+        if checks["tower"] == True:
+            towerSelect.isClicked(event2)
         closeButton.isClicked(event2)
         towerCheck.isClicked(event2)
         robotStart.isClicked(event2)
@@ -686,7 +707,8 @@ def drawAutoMenu(fuelX, fuelY, fuelW, fuelH, fuelFont, displayX, displayY, displ
     autoFuelMinus1.draw(screen)
     autoSwipesPlus1.draw(screen)
     autoSwipesMinus1.draw(screen)
-    towerSelect.draw(screen)
+    if checks["tower"] == True:
+        towerSelect.draw(screen)
     closeButton.draw(screen)
     towerCheck.draw(screen)
     robotStart.draw(screen)
@@ -716,7 +738,7 @@ def drawAutoMenu(fuelX, fuelY, fuelW, fuelH, fuelFont, displayX, displayY, displ
         else:
             pass
 
-def initDropsTeleMenu(defenseX, defenseY, defenseW, defenseH, gatherX, gatherY, gatherW, gatherH, typeX, typeY, typeW, typeH):
+def initDropsTeleMenu(defenseX, defenseY, defenseW, defenseH, gatherX, gatherY, gatherW, gatherH, typeX, typeY, typeW, typeH, specX, specY, specW, specH, phone=False):
     global defenseCheck
     global depotCheck
     global outpostCheck
@@ -736,6 +758,8 @@ def initDropsTeleMenu(defenseX, defenseY, defenseW, defenseH, gatherX, gatherY, 
     global typeH2
     global timerColor
     global telePeriod
+    global intakeTypeDrop
+    global shooterTypeDrop
 
     # bad workaround to render text correctly
     gatherX2 = gatherX
@@ -756,10 +780,19 @@ def initDropsTeleMenu(defenseX, defenseY, defenseW, defenseH, gatherX, gatherY, 
     hitDefCheck = Checkbox(x=typeX*xMult, y=(typeY+(typeH)+25)*yMult, width=typeW*xMult, height=typeH*yMult, color=WHITE, clickedColor=BLACK, dictId='hitdef', rounding=15, text='Hitting Opponent', fontType=3)
     neutralDefCheck = Checkbox(x=typeX*xMult, y=(typeY+(typeH*2)+50)*yMult, width=typeW*xMult, height=typeH*yMult, color=WHITE, clickedColor=BLACK, dictId='nzdef', rounding=15, text='General NZ', fontType=3)
     oppDefCheck = Checkbox(x=typeX*xMult, y=(typeY+(typeH*3)+75)*yMult, width=typeW*xMult, height=typeH*yMult, color=WHITE, clickedColor=BLACK, dictId='azdef', rounding=15, text='General AZ', fontType=3)
+    intakeTypeDrop = Dropdown(text="Type of Intake", x = specX*xMult, y = specY*yMult, width = specW*xMult, height = specH*yMult, color = GREEN, function = intakeTypeSelect, fontType = 2, dropFont = 2, rounding = math.trunc(5*xMult), dropdownAmount = 3, textList = intakeList, event=event2)
+    if phone == True:
+        #there's not enough space horizontally on phones, so this flag has to exist
+        #not relying on ANDROID_ARGUMENT because of iPhones.
+        shooterTypeDrop = Dropdown(text="Type of Shooter", x = specX*xMult, y = (specY+25+(specH*4))*yMult, width = specW*xMult, height = specH*yMult, color = GREEN, function = shooterTypeSelect, fontType = 2, dropFont = 2, rounding = math.trunc(5*xMult), dropdownAmount = 4, textList = shooterList, event=event2)
+    else:
+        #pc
+        shooterTypeDrop = Dropdown(text="Type of Shooter", x = (specX+25+specW)*xMult, y = specY*yMult, width = specW*xMult, height = specH*yMult, color = GREEN, function = shooterTypeSelect, fontType = 2, dropFont = 2, rounding = math.trunc(5*xMult), dropdownAmount = 4, textList = shooterList, event=event2)
+    intakeTypeDrop.initDropped()
+    shooterTypeDrop.initDropped()
 
 def drawTeleopMenu(fuelX, fuelY, fuelW, fuelH, fuelFont, displayX, displayY, displayW, displayH, nextX, nextY, nextW, nextH):
     #infinite parameters v3
-    # these parameters (for now) can and should be the exact same as drawAutoMenu() in the GUI code.
     global autoFuelPlus1
     global autofuelMinus1
     global remainingTime
@@ -773,6 +806,8 @@ def drawTeleopMenu(fuelX, fuelY, fuelW, fuelH, fuelFont, displayX, displayY, dis
     teleFuelMinus1 = Button(text="-1", x = (fuelX-fuelW-25)*xMult, y = fuelY*yMult, width = fuelW*xMult, height = fuelH*yMult, color = DARKRED, function = teleFuelMinus1Button, fontType = fuelFont, rounding = math.trunc(15*xMult))
     teleSwipesPlus1 = Button(text="+1", x = (fuelX+fuelW+25)*xMult, y = (fuelY+fuelH+50)*yMult, width = fuelW*xMult, height = fuelH*yMult, color = DARKGREEN, function = teleSwipesPlus1Button, fontType = fuelFont, rounding = math.trunc(15*xMult))
     teleSwipesMinus1 = Button(text="-1", x = (fuelX-fuelW-25)*xMult, y = (fuelY+fuelH+50)*yMult, width = fuelW*xMult, height = fuelH*yMult, color = DARKRED, function = teleSwipesMinus1Button, fontType = fuelFont, rounding = math.trunc(15*xMult))
+    displayIntake = Button(text=f'Intake Type: {intakeType}', x = displayX*xMult, y = displayY*yMult, width = displayW*xMult, height = displayH*yMult, color = DARKERGREEN, function = empty, fontType = 2, rounding = math.trunc(15*xMult))
+    displayShooter = Button(text=f'Shooter Type: {shooterType}', x = (displayX+displayW+25)*xMult, y = displayY*yMult, width = displayW*xMult, height = displayH*yMult, color = DARKERGREEN, function = empty, fontType = 2, rounding = math.trunc(15*xMult))
 
     # check if clicked v3
     for event in pygame.event.get():
@@ -789,10 +824,13 @@ def drawTeleopMenu(fuelX, fuelY, fuelW, fuelH, fuelFont, displayX, displayY, dis
         outpostCheck.isClicked(event2)
         neutralCheck.isClicked(event2)
         oppositionCheck.isClicked(event2)
-        blockDefCheck.isClicked(event2)
-        hitDefCheck.isClicked(event2)
-        neutralDefCheck.isClicked(event2)
-        oppDefCheck.isClicked(event2)
+        if checks["defense"] == True:
+            blockDefCheck.isClicked(event2)
+            hitDefCheck.isClicked(event2)
+            neutralDefCheck.isClicked(event2)
+            oppDefCheck.isClicked(event2)
+        intakeTypeDrop.isClicked(event2)
+        shooterTypeDrop.isClicked(event2)
     
     screen.fill(GRAY)
     teleFuelPlus1.draw(screen)
@@ -805,17 +843,23 @@ def drawTeleopMenu(fuelX, fuelY, fuelW, fuelH, fuelFont, displayX, displayY, dis
     outpostCheck.draw(screen)
     neutralCheck.draw(screen)
     oppositionCheck.draw(screen)
-    blockDefCheck.draw(screen)
-    hitDefCheck.draw(screen)
-    neutralDefCheck.draw(screen)
-    oppDefCheck.draw(screen)
+    if checks["defense"] == True:
+        blockDefCheck.draw(screen)
+        hitDefCheck.draw(screen)
+        neutralDefCheck.draw(screen)
+        oppDefCheck.draw(screen)
+    intakeTypeDrop.draw(screen)
+    displayIntake.draw(screen)
+    shooterTypeDrop.draw(screen)
+    displayShooter.draw(screen)
 
     screen.blit(hugeFont.render(str(teleFuelCount), True, BLACK), ((fuelX+(fuelW/3))*xMult, (fuelY+(fuelH/3))*yMult))
     screen.blit(boldFont.render("Tele-op Fuel Count", True, BLACK), ((fuelX-(fuelW/1.8))*xMult, (fuelY-fuelH/2)*yMult))
     screen.blit(hugeFont.render(str(teleSwipesCount), True, BLACK), ((fuelX+(fuelW/3))*xMult, ((fuelY+(fuelH/3))+fuelH+50)*yMult))
     screen.blit(boldFont.render("Tele-op Cycles Count", True, BLACK), ((fuelX-(fuelW/1.65))*xMult, ((fuelY-fuelH/2)+fuelH+50)*yMult))
     screen.blit(hugeFont.render("Gathered Fuel from...", True, BLACK), (gatherX2*xMult, (gatherY2-gatherH2)*yMult))
-    screen.blit(hugeFont.render("Defense Types", True, BLACK), (typeX2*xMult, (typeY2-typeH2)*yMult))
+    if checks["defense"] == True:
+        screen.blit(hugeFont.render("Defense Types", True, BLACK), (typeX2*xMult, (typeY2-typeH2)*yMult))
 
     if remainingTime >= 10:
         screen.blit(hugeFont.render(f'00:{remainingTime}', True, timerColor), (timeX2*xMult, timeY2*yMult))
