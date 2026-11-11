@@ -1,9 +1,6 @@
 # TODO
 * API key from The Blue Alliance when internet connected (may not happen)
-* finish teleop period
 * no ai
-* rating at end of match
-* make endgame menu
 * make end of match menu
 ## ANDROID-SPECIFIC
 * invoking keyboard to type match stats

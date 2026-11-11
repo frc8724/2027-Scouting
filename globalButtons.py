@@ -85,7 +85,10 @@ def getWriteDir():
 
     writeDir.mkdir(parents=True, exist_ok=True)
 
-#yes, the dropdown system relies on dictionaries (in dictionaries). however, it is quite optimized!
+# ===================================================================
+#                        VARIABLE DEFINITIONS
+# ===================================================================
+
 global dropRect
 dropRect = {}
 global rect
@@ -116,6 +119,15 @@ global teleSwipesCount
 teleSwipesCount = 0
 intakeType = 'none'
 shooterType = 'none'
+endTowerLevel = 0
+defenseRatingValue = 0
+shooterRatingValue = 0
+intakeRatingValue = 0
+driverRatingValue = 0
+
+# ===================================================================
+#                            THEMES
+# ===================================================================
 
 # define colors *once* for ease-of-use in adding new elements. also the default theme
 # themes are not implemented yet, but they may be in the future.
@@ -139,6 +151,10 @@ DARKGREEN = (0, 170, 0)
 DARKERGREEN = (0, 150, 0)
 GRAY = (100, 100, 100)
 DARKBLUE = (0, 0, 170)
+
+# ===================================================================
+#                            CLASSES
+# ===================================================================
 
 def fontDef(fontVar, fontType, passedText="well that's not great"):
     #necessary for optimization; makes it so the fonts (at least for buttons and checkboxes) are only defined on startup and not every frame.
@@ -300,7 +316,7 @@ class Checkbox:
         self.color = color
         self.color2 = clickedColor
         self.id = dictId
-        checks[self.id] = 0
+        checks[self.id] = False
         self.rect = pygame.Rect(x, y, width, height)
         self.rounding = rounding
         self.text = text
@@ -330,6 +346,9 @@ class Checkbox:
                 elif checks[self.id] == True:
                     checks[self.id] = False
 
+# ===================================================================
+#                        MAIN MENU BUTTONS
+# ===================================================================
 
 def exitButton():
     #bye
@@ -410,6 +429,10 @@ def scoutSelector():
         scoutName = ' '.join(dropRect["Scout"])
         scoutSelect.dropped = 0
 
+# ===================================================================
+#                        AUTO PERIOD BUTTONS
+# ===================================================================
+
 def autoFuelPlus1Button():
     global autoFuelCount
     autoFuelCount += 1
@@ -466,7 +489,7 @@ def startTeleopButton():
     print("teleop started")
     global menuNumber
     global remainingTime
-    if robotPos != "none" and autoWinner != "none" and remainingTime == 0:
+    if robotPos != "none" and autoWinner != "none": # and remainingTime == 0: (commented out for ease of testing/iteration)
         #make sure to select the values!!
         menuNumber = 3
         global frames
@@ -485,6 +508,9 @@ def startTeleopButton():
         # yes, it's only visible in the terminal.
         print("Select all values first.")
 
+# ===================================================================
+#                        TELEOP PERIOD BUTTONS
+# ===================================================================
 def teleFuelPlus1Button():
     global teleFuelCount
     teleFuelCount += 1
@@ -525,11 +551,146 @@ def shooterTypeSelect():
         shooterType = ' '.join(dropRect["Type of Shooter"])
         shooterTypeDrop.dropped = 0
 
+def startEndgameButton():
+    print("endgame started")
+    global menuNumber
+    global remainingTime
+    if intakeType != "none" and shooterType != "none": # and remainingTime == 0 and telePeriod == 6: (commented out for ease of testing/iteration)
+        #make sure to select the values!!
+        menuNumber = 4
+        global frames
+        # transition is 3s
+        remainingTime = 30
+        frames = 0
+    else:
+        # yes, it's only visible in the terminal.
+        print("Select all values first.")
+
+# ===================================================================
+#                        ENDGAME BUTTONS
+# ===================================================================
+def defenseRating():
+    global defenseRatingValue
+    if ' '.join(dropRect["Defense Rating"]) == 'placeholder':
+        pass
+    else:
+        try:
+            defenseRatingValue = int(' '.join(dropRect["Defense Rating"]))
+            defenseRatingSelect.dropped = 0
+        except Exception as e:
+            pass
+
+def shooterRating():
+    global shooterRatingValue
+    if ' '.join(dropRect["Shooter Rating"]) == 'placeholder':
+        pass
+    else:
+        try:
+            shooterRatingValue = int(' '.join(dropRect["Shooter Rating"]))
+            shooterRatingSelect.dropped = 0
+        except Exception as e:
+            pass
+
+def intakeRating():
+    global intakeRatingValue
+    if ' '.join(dropRect["Intake Rating"]) == 'placeholder':
+        pass
+    else:
+        try:
+            intakeRatingValue = int(' '.join(dropRect["Intake Rating"]))
+            intakeRatingSelect.dropped = 0
+        except Exception as e:
+            pass
+
+def driverRating():
+    global driverRatingValue
+    if ' '.join(dropRect["Driver Rating"]) == 'placeholder':
+        pass
+    else:
+        try:
+            driverRatingValue = int(' '.join(dropRect["Driver Rating"]))
+            driverRatingSelect.dropped = 0
+        except Exception as e:
+            pass
+
+def endTowerLevelSelect():
+    global endTowerLevel
+    if ' '.join(dropRect["Tower Level "]) == 'placeholder':
+        pass
+    else:
+        try:
+            endTowerLevel = int(' '.join(dropRect["Tower Level "]))
+            endgameTowerSelect.dropped = 0
+        except Exception as e:
+            pass
+
+def finishMatch():
+    # the culmination of every single variable that needs to get saved
+    # since this is a function...
+    # I HAVE TO GLOBAL THEM ALL!
+
+    global matchNumber2
+    global teamNumber
+    global scoutName
+    global robotPosition
+    global autoFuelCount
+    global autoSwipesCount
+    global towerLevel
+    global robotPos
+    global autoWinner
+    global teleFuelCount
+    global teleSwipesCount
+    global intakeType
+    global shooterType
+    global endTowerLevel
+    global defenseRatingValue
+    global shooterRatingValue
+    global intakeRatingValue
+    global driverRatingValue
+    global checks
+    global menuNumber
+
+    if defenseRatingValue != 0 and shooterRatingValue != 0 and intakeRatingValue != 0 and driverRatingValue != 0:
+        # save
+        with open(writeDir / f'match-{matchNumber2}_team-{teamNumber}.csv', 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow([matchNumber2, teamNumber, robotPosition, scoutName, shooterType, intakeType, teleSwipesCount, teleFuelCount, autoFuelCount, autoSwipesCount, autoWinner, robotPosition, towerLevel, defenseRatingValue, shooterRatingValue, intakeRatingValue, driverRatingValue, endTowerLevel, checks["outpost"], checks["depot"], checks["azgather"], checks["nzgather"], checks["defense"], checks["tower"], checks["hitdef"], checks["blockdef"], checks["azdef"], checks["nzdef"]])
+      
+        # reset most values to default for next match
+        # The scout name can stay, they'll be using the same device next match (usually)
+        matchNumber2 = 'none'
+        teamNumber = "none"
+        robotPosition = "none"
+        autoFuelCount = 0
+        autoSwipesCount = 0
+        towerLevel = 0
+        robotPos = 'none'
+        autoWinner = 'none'
+        teleFuelCount = 0
+        teleSwipesCount = 0
+        intakeType = 'none'
+        shooterType = 'none'
+        endTowerLevel = 0
+        defenseRatingValue = 0
+        shooterRatingValue = 0
+        intakeRatingValue = 0
+        driverRatingValue = 0
+
+        # reset all checkboxes
+        for key in checks:
+            checks[key] = False
+
+        # go back to main menu
+        menuNumber = 1
+
 def empty():
     #for static "display" buttons that need to have a function assigned to them, but shouldn't do anything when clicked.
     pass
 
-#define allllllllllllll the lists
+# ===================================================================
+#                           TEXT LISTS
+# ===================================================================
+
 # 'placeholder' values at the end are there for checking if the click was to drop it down or actually clicking a dropdown object.
 matchList = [0, 0, 0, 0, 0, 0, 0]
 matchList[0] = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'placeholder']
@@ -558,11 +719,12 @@ startPositions = ['Left Trench', 'Left Bump', "Hub", 'Right Bump', 'Right Trench
 winnerList = ['Red', 'Blue', 'Tie', "placeholder"]
 intakeList = ['Over Bumper', 'Between Bumper', 'No Intake', 'placeholder']
 shooterList = ['Single Hood', 'Double Hood', 'Turret', 'No Shooter', 'placeholder']
+# literally a list of numbers 1 through 5
+countTo5 = ['1', '2', '3', '4', '5', 'placeholder']
 
-def testTheValues():
-    with open(writeDir / f'{matchNumber2}.csv', 'w', newline='') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow([matchNumber2, teamNumber, robotPosition, scoutName])
+# ===================================================================
+#                        DRAWING FUNCTIONS
+# ===================================================================
 
 def drawMainMenu(closeX, closeY, closeW, closeH, startX, startY, startW, startH, logoW, logoH, displayX, displayY, displayW, displayH):
     #infinite parameters
@@ -808,6 +970,7 @@ def drawTeleopMenu(fuelX, fuelY, fuelW, fuelH, fuelFont, displayX, displayY, dis
     teleSwipesMinus1 = Button(text="-1", x = (fuelX-fuelW-25)*xMult, y = (fuelY+fuelH+50)*yMult, width = fuelW*xMult, height = fuelH*yMult, color = DARKRED, function = teleSwipesMinus1Button, fontType = fuelFont, rounding = math.trunc(15*xMult))
     displayIntake = Button(text=f'Intake Type: {intakeType}', x = displayX*xMult, y = displayY*yMult, width = displayW*xMult, height = displayH*yMult, color = DARKERGREEN, function = empty, fontType = 2, rounding = math.trunc(15*xMult))
     displayShooter = Button(text=f'Shooter Type: {shooterType}', x = (displayX+displayW+25)*xMult, y = displayY*yMult, width = displayW*xMult, height = displayH*yMult, color = DARKERGREEN, function = empty, fontType = 2, rounding = math.trunc(15*xMult))
+    startEndgame = Button(text="Start Endgame", x = nextX*xMult, y = nextY*yMult, width = nextW*xMult, height = nextH*yMult, color = BLUE, function = startEndgameButton, fontType = 3, rounding = math.trunc(50*xMult))
 
     # check if clicked v3
     for event in pygame.event.get():
@@ -825,12 +988,14 @@ def drawTeleopMenu(fuelX, fuelY, fuelW, fuelH, fuelFont, displayX, displayY, dis
         neutralCheck.isClicked(event2)
         oppositionCheck.isClicked(event2)
         if checks["defense"] == True:
+            # so the defense-related buttons don't show up unless the defense box is checked to prevent unecessary screen clutter
             blockDefCheck.isClicked(event2)
             hitDefCheck.isClicked(event2)
             neutralDefCheck.isClicked(event2)
             oppDefCheck.isClicked(event2)
         intakeTypeDrop.isClicked(event2)
         shooterTypeDrop.isClicked(event2)
+        startEndgame.isClicked(event2)
     
     screen.fill(GRAY)
     teleFuelPlus1.draw(screen)
@@ -852,6 +1017,7 @@ def drawTeleopMenu(fuelX, fuelY, fuelW, fuelH, fuelFont, displayX, displayY, dis
     displayIntake.draw(screen)
     shooterTypeDrop.draw(screen)
     displayShooter.draw(screen)
+    startEndgame.draw(screen)
 
     screen.blit(hugeFont.render(str(teleFuelCount), True, BLACK), ((fuelX+(fuelW/3))*xMult, (fuelY+(fuelH/3))*yMult))
     screen.blit(boldFont.render("Tele-op Fuel Count", True, BLACK), ((fuelX-(fuelW/1.8))*xMult, (fuelY-fuelH/2)*yMult))
@@ -873,7 +1039,6 @@ def drawTeleopMenu(fuelX, fuelY, fuelW, fuelH, fuelFont, displayX, displayY, dis
         if remainingTime > 0:
             frames = 0
             remainingTime -= 1
-            print(remainingTime)
         else:
             if telePeriod == 1:
                 # transition period
@@ -937,3 +1102,79 @@ def drawTeleopMenu(fuelX, fuelY, fuelW, fuelH, fuelFont, displayX, displayY, dis
             else:
                 # endgame time!!
                 timerColor = BLACK
+
+def initDropsEndgameMenu(towerX, towerY, towerW, towerH, ratingX, ratingY, ratingW, ratingH, phone=None):
+    global endgameTowerSelect
+    global defenseRatingSelect
+    global shooterRatingSelect
+    global intakeRatingSelect
+    global driverRatingSelect
+
+    endgameTowerSelect = Dropdown(text="Tower Level ", x = towerX*xMult, y = towerY*yMult, width = towerW*xMult, height = towerH*yMult, color = GREEN, function = endTowerLevelSelect, fontType = 2, dropFont = 3, rounding = math.trunc(5*xMult), dropdownAmount = len(towerList)-1, textList = towerList, event=event2)
+    # there is a space so as not to confuse *this* dropdown with the previous tower level from back in auto.
+    # this is necessary because dropdowns are recognized by their text.
+    defenseRatingSelect = Dropdown(text="Defense Rating", x = ratingX*xMult, y = ratingY*yMult, width = ratingW*xMult, height = ratingH*yMult, color = GREEN, function = defenseRating, fontType = 2, dropFont = 3, rounding = math.trunc(5*xMult), dropdownAmount = len(countTo5)-1, textList = countTo5, event=event2)
+    shooterRatingSelect = Dropdown(text="Shooter Rating", x = (ratingX+ratingW+25)*xMult, y = ratingY*yMult, width = ratingW*xMult, height = ratingH*yMult, color = GREEN, function = shooterRating, fontType = 2, dropFont = 3, rounding = math.trunc(5*xMult), dropdownAmount = len(countTo5)-1, textList = countTo5, event=event2)
+    if phone == True:
+        #phones barely have enough horizontal space for 3 dropdowns, let alone 5
+        intakeRatingSelect = Dropdown(text="Intake Rating", x = ratingX*xMult, y = (ratingY+(ratingH*6)+25)*yMult, width = ratingW*xMult, height = ratingH*yMult, color = GREEN, function = intakeRating, fontType = 2, dropFont = 3, rounding = math.trunc(5*xMult), dropdownAmount = len(countTo5)-1, textList = countTo5, event=event2)
+        driverRatingSelect = Dropdown(text="Driver Rating", x = (ratingX+ratingW+25)*xMult, y = (ratingY+(ratingH*6)+25)*yMult, width = ratingW*xMult, height = ratingH*yMult, color = GREEN, function = driverRating, fontType = 2, dropFont = 3, rounding = math.trunc(5*xMult), dropdownAmount = len(countTo5)-1, textList = countTo5, event=event2)
+    else:
+        intakeRatingSelect = Dropdown(text="Intake Rating", x = (ratingX+(ratingW*2)+50)*xMult, y = ratingY*yMult, width = ratingW*xMult, height = ratingH*yMult, color = GREEN, function = intakeRating, fontType = 2, dropFont = 3, rounding = math.trunc(5*xMult), dropdownAmount = len(countTo5)-1, textList = countTo5, event=event2)
+        driverRatingSelect = Dropdown(text="Driver Rating", x = (ratingX+(ratingW*3)+75)*xMult, y = ratingY*yMult, width = ratingW*xMult, height = ratingH*yMult, color = GREEN, function = driverRating, fontType = 2, dropFont = 3, rounding = math.trunc(5*xMult), dropdownAmount = len(countTo5)-1, textList = countTo5, event=event2)
+    
+    endgameTowerSelect.initDropped()
+    defenseRatingSelect.initDropped()
+    shooterRatingSelect.initDropped()
+    intakeRatingSelect.initDropped()
+    driverRatingSelect.initDropped()
+
+def drawEndgameMenu(displayX, displayY, displayW, displayH, startX, startY, startW, startH):
+    
+    global remainingTime
+    global frames
+    
+    displayEndTower = Button(text=f'Tower Level: {endTowerLevel}', x = displayX*xMult, y = displayY*yMult, width = displayW*xMult, height = displayH*yMult, color = DARKERGREEN, function = empty, fontType = 2, rounding = math.trunc(15*xMult))
+    displayDefenseRate = Button(text=f'Defense Rating: {defenseRatingValue}', x = (displayX+displayW+25)*xMult, y = displayY*yMult, width = displayW*xMult, height = displayH*yMult, color = DARKERGREEN, function = empty, fontType = 2, rounding = math.trunc(15*xMult))
+    displayShooterRate = Button(text=f'Shooter Rating: {shooterRatingValue}', x = (displayX+(displayW*2)+50)*xMult, y = displayY*yMult, width = displayW*xMult, height = displayH*yMult, color = DARKERGREEN, function = empty, fontType = 2, rounding = math.trunc(15*xMult))
+    displayIntakeRate = Button(text=f'Intake Rating: {intakeRatingValue}', x = (displayX+(displayW*3)+75)*xMult, y = displayY*yMult, width = displayW*xMult, height = displayH*yMult, color = DARKERGREEN, function = empty, fontType = 2, rounding = math.trunc(15*xMult))
+    displayDriverRate = Button(text=f'Driver Rating: {driverRatingValue}', x = (displayX+(displayW*4)+100)*xMult, y = displayY*yMult, width = displayW*xMult, height = displayH*yMult, color = DARKERGREEN, function = empty, fontType = 2, rounding = math.trunc(15*xMult))
+    saveAndReturn = Button(text="Finish Match", x = startX*xMult, y = startY*yMult, width = startW*xMult, height = startH*yMult, color = BLUE, function = finishMatch, fontType = 3, rounding = math.trunc(50*xMult))
+
+    for event in pygame.event.get():
+        event2 = event
+        endgameTowerSelect.isClicked(event2)
+        defenseRatingSelect.isClicked(event2)
+        shooterRatingSelect.isClicked(event2)
+        intakeRatingSelect.isClicked(event2)
+        driverRatingSelect.isClicked(event2)
+        closeButton.isClicked(event2)
+        saveAndReturn.isClicked(event2)
+
+    screen.fill(GRAY)
+    endgameTowerSelect.draw(screen)
+    defenseRatingSelect.draw(screen)
+    shooterRatingSelect.draw(screen)
+    intakeRatingSelect.draw(screen)
+    driverRatingSelect.draw(screen)
+    closeButton.draw(screen)
+    displayEndTower.draw(screen)
+    displayDefenseRate.draw(screen)
+    displayShooterRate.draw(screen)
+    displayIntakeRate.draw(screen)
+    displayDriverRate.draw(screen)
+    saveAndReturn.draw(screen)
+
+    if frames < 60:
+        frames += 1
+    else:
+        if remainingTime > 0:
+            frames = 0
+            remainingTime -= 1
+        else:
+            pass
+
+    if remainingTime >= 10:
+        screen.blit(hugeFont.render(f'00:{remainingTime}', True, timerColor), (timeX2*xMult, timeY2*yMult))
+    else:
+        screen.blit(hugeFont.render(f'00:0{remainingTime}', True, timerColor), (timeX2*xMult, timeY2*yMult))

@@ -5,7 +5,8 @@ main.aspectRatio(600, 800)
 main.initDropsMainMenu(10, 60, 75, 50, 2)
 main.initDropsMainMenu2(400, 60, 75, 50, 2, 200, 60, 75, 50, 2, 500, 60, 100, 50, 2)
 main.initDropsAutoMenu(350, 100, 100, 100, 2, 475, 100, 100, 100, 2, 25, 275, 200, 50, 2)
-main.initDropsTeleMenu(75, 25, 50, 50, 300, 75, 60, 50, 300, 450, 60, 50, 10, 325, 125, 50)
+main.initDropsTeleMenu(75, 25, 50, 50, 300, 75, 60, 50, 300, 420, 60, 50, 10, 325, 125, 50)
+main.initDropsEndgameMenu(25, 45, 150, 42, 200, 45, 150, 42, True)
 while True:
     if main.menuNumber == 1:
         main.drawMainMenu(550, 0, 50, 25, 50, 700, 500, 75, 50, 50, 12.5, 625, 125, 50)
@@ -15,5 +16,9 @@ while True:
 
     elif main.menuNumber == 3:
         main.drawTeleopMenu(100, 100, 50, 50, 2, 12.5, 625, 125, 50, 50, 700, 500, 75)
+
+    elif main.menuNumber == 4:
+        main.drawEndgameMenu(0, 600, 100, 50, 25, 675, 550, 100)
+
     main.pygame.display.flip()
     main.clock.tick(60)

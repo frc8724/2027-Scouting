@@ -7,6 +7,7 @@ main.initDropsMainMenu(0, 50, 150, 50, 2)
 main.initDropsMainMenu2(725, 50, 150, 50, 2, 360, 50, 150, 50, 2, 920, 50, 150, 50, 2)
 main.initDropsAutoMenu(400, 100, 200, 100, 3, 750, 50, 200, 50, 3, 100, 275, 250, 50, 3)
 main.initDropsTeleMenu(125, 25, 50, 50, 375, 75, 75, 50, 675, 75, 75, 50, 10, 275, 150, 50)
+main.initDropsEndgameMenu(25, 50, 175, 75, 235, 50, 175, 75)
 while True:  
 
     if main.menuNumber == 1:
@@ -17,6 +18,9 @@ while True:
 
     elif main.menuNumber == 3:
         main.drawTeleopMenu(200, 100, 50, 50, 2, 45, 545, 250, 45, 650, 375, 400, 200)
+
+    elif main.menuNumber == 4:
+        main.drawEndgameMenu(0, 7.5, 165, 35, 20, 496, 1050, 100)
 
     main.pygame.display.flip()
     main.clock.tick(60)
