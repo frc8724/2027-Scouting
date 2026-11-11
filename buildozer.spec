@@ -164,7 +164,7 @@ android.minapi = 21
 #android.service_class_name = org.kivy.android.PythonService
 
 # (str) Android app theme, default is ok for Kivy-based app
-android.apptheme = "@android:style/Theme.NoTitleBar.Fullscreen"
+# android.apptheme = "@android:style/Theme.NoTitleBar.Fullscreen"
 
 # (list) Pattern to whitelist for the whole project
 #android.whitelist =

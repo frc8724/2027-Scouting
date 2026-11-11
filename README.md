@@ -55,7 +55,7 @@ pyinstaller desktop.py --hide-console minimize-early -F --icon "assets/logo.ico"
 8. Double-click `desktop.exe` to run!
 # ANDROID
 ## Option 1: Build it yourself
-1. Follow the [Buildozer setup instructions](https://buildozer.readthedocs.io/en/stable/installation/]
+1. Follow the [Buildozer setup instructions](https://buildozer.readthedocs.io/en/stable/installation/)
 2. Install Python dependencies
 ```
 pip install pygame
@@ -74,3 +74,6 @@ buildozer android debug
 ```
 ## Option 2: Get a pre-built APK
 The APK for the latest commit can always be downloaded from [the Actions tab](https://github.com/frc8724/2027-Scouting/actions)
+# KNOWN ISSUES
+- App crashes on WSL, may be due to the Ubuntu version on my testing device, or the limitations of WSL itself. I do not have Linux to test on, so the app may run on Linux.
+- 
