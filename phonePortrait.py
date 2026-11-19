@@ -19,7 +19,7 @@ while True:
         main.drawTeleopMenu(75, 100, 50, 75, 3, 0, 850, 135, 50, 30, 925, 400, 50)
 
     elif main.menuNumber == 4:
-        main.drawEndgameMenu(0, 800, 100, 50, 10, 875, 440, 100)
+        main.drawEndgameMenu(0, 800, 100, 50, 10, 875, 440, 100, 5, 300, 125, 400, True)
 
     main.pygame.display.flip()
     main.clock.tick(60)

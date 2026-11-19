@@ -5,6 +5,8 @@ import os
 import math
 from pathlib import Path
 pygame.init()
+# hold backspace for notes
+pygame.key.set_repeat(500, 40)
 # put this at beginning of gui code!!!!!!!
 def aspectRatio(x, y):
     #dynamic scaling
@@ -124,6 +126,12 @@ defenseRatingValue = 0
 shooterRatingValue = 0
 intakeRatingValue = 0
 driverRatingValue = 0
+global inputActive
+inputActive = False
+global notes
+notes = ''
+global renderedNotes
+renderedNotes = ''
 
 # ===================================================================
 #                            THEMES
@@ -141,6 +149,7 @@ global DARKGREEN
 global DARKERGREEN
 global GRAY
 global DARKBLUE
+global DARKGRAY
 BLACK = (0, 0, 0)
 WHITE  = (255, 255, 255)
 RED = (255, 0, 0)
@@ -151,6 +160,7 @@ DARKGREEN = (0, 170, 0)
 DARKERGREEN = (0, 150, 0)
 GRAY = (100, 100, 100)
 DARKBLUE = (0, 0, 170)
+DARKGRAY = (50, 50, 50)
 
 # ===================================================================
 #                            CLASSES
@@ -489,7 +499,7 @@ def startTeleopButton():
     print("teleop started")
     global menuNumber
     global remainingTime
-    if robotPos != "none" and autoWinner != "none": # and remainingTime == 0: (commented out for ease of testing/iteration)
+    if robotPos != "none" and autoWinner != "none" and remainingTime == 0:
         #make sure to select the values!!
         menuNumber = 3
         global frames
@@ -555,7 +565,7 @@ def startEndgameButton():
     print("endgame started")
     global menuNumber
     global remainingTime
-    if intakeType != "none" and shooterType != "none": # and remainingTime == 0 and telePeriod == 6: (commented out for ease of testing/iteration)
+    if intakeType != "none" and shooterType != "none" and remainingTime == 0 and telePeriod == 6:
         #make sure to select the values!!
         menuNumber = 4
         global frames
@@ -649,12 +659,14 @@ def finishMatch():
     global driverRatingValue
     global checks
     global menuNumber
+    global notes
+    global renderedNotes
 
-    if defenseRatingValue != 0 and shooterRatingValue != 0 and intakeRatingValue != 0 and driverRatingValue != 0:
+    if defenseRatingValue != 0 and shooterRatingValue != 0 and intakeRatingValue != 0 and driverRatingValue != 0 and remainingTime == 0:
         # save
         with open(writeDir / f'match-{matchNumber2}_team-{teamNumber}.csv', 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
-            writer.writerow([matchNumber2, teamNumber, robotPosition, scoutName, shooterType, intakeType, teleSwipesCount, teleFuelCount, autoFuelCount, autoSwipesCount, autoWinner, robotPosition, towerLevel, defenseRatingValue, shooterRatingValue, intakeRatingValue, driverRatingValue, endTowerLevel, checks["outpost"], checks["depot"], checks["azgather"], checks["nzgather"], checks["defense"], checks["tower"], checks["hitdef"], checks["blockdef"], checks["azdef"], checks["nzdef"]])
+            writer.writerow([matchNumber2, teamNumber, robotPosition, scoutName, shooterType, intakeType, teleSwipesCount, teleFuelCount, autoFuelCount, autoSwipesCount, autoWinner, robotPosition, towerLevel, defenseRatingValue, shooterRatingValue, intakeRatingValue, driverRatingValue, endTowerLevel, checks["outpost"], checks["depot"], checks["azgather"], checks["nzgather"], checks["defense"], checks["tower"], checks["hitdef"], checks["blockdef"], checks["azdef"], checks["nzdef"], notes])
       
         # reset most values to default for next match
         # The scout name can stay, they'll be using the same device next match (usually)
@@ -675,6 +687,8 @@ def finishMatch():
         shooterRatingValue = 0
         intakeRatingValue = 0
         driverRatingValue = 0
+        renderedNotes = ''
+        notes = ''
 
         # reset all checkboxes
         for key in checks:
@@ -682,6 +696,12 @@ def finishMatch():
 
         # go back to main menu
         menuNumber = 1
+
+def noteKeeper():
+    global inputActive
+    inputActive = True
+    pygame.key.set_text_input_rect(notesBox.rect)
+    pygame.key.start_text_input()
 
 def empty():
     #for static "display" buttons that need to have a function assigned to them, but shouldn't do anything when clicked.
@@ -1129,10 +1149,13 @@ def initDropsEndgameMenu(towerX, towerY, towerW, towerH, ratingX, ratingY, ratin
     intakeRatingSelect.initDropped()
     driverRatingSelect.initDropped()
 
-def drawEndgameMenu(displayX, displayY, displayW, displayH, startX, startY, startW, startH):
-    
+def drawEndgameMenu(displayX, displayY, displayW, displayH, startX, startY, startW, startH, noteX, noteY, noteW, noteH, thinDesc=False):
     global remainingTime
     global frames
+    global notesBox
+    global inputActive
+    global notes
+    global renderedNotes
     
     displayEndTower = Button(text=f'Tower Level: {endTowerLevel}', x = displayX*xMult, y = displayY*yMult, width = displayW*xMult, height = displayH*yMult, color = DARKERGREEN, function = empty, fontType = 2, rounding = math.trunc(15*xMult))
     displayDefenseRate = Button(text=f'Defense Rating: {defenseRatingValue}', x = (displayX+displayW+25)*xMult, y = displayY*yMult, width = displayW*xMult, height = displayH*yMult, color = DARKERGREEN, function = empty, fontType = 2, rounding = math.trunc(15*xMult))
@@ -1140,6 +1163,7 @@ def drawEndgameMenu(displayX, displayY, displayW, displayH, startX, startY, star
     displayIntakeRate = Button(text=f'Intake Rating: {intakeRatingValue}', x = (displayX+(displayW*3)+75)*xMult, y = displayY*yMult, width = displayW*xMult, height = displayH*yMult, color = DARKERGREEN, function = empty, fontType = 2, rounding = math.trunc(15*xMult))
     displayDriverRate = Button(text=f'Driver Rating: {driverRatingValue}', x = (displayX+(displayW*4)+100)*xMult, y = displayY*yMult, width = displayW*xMult, height = displayH*yMult, color = DARKERGREEN, function = empty, fontType = 2, rounding = math.trunc(15*xMult))
     saveAndReturn = Button(text="Finish Match", x = startX*xMult, y = startY*yMult, width = startW*xMult, height = startH*yMult, color = BLUE, function = finishMatch, fontType = 3, rounding = math.trunc(50*xMult))
+    notesBox = Button(text="", x = noteX*xMult, y = noteY*yMult, width = noteW*xMult, height = noteH*yMult, color = DARKGRAY, function = noteKeeper, fontType = 3, rounding = 0) #no rounding. it looks cleaner.
 
     for event in pygame.event.get():
         event2 = event
@@ -1150,6 +1174,24 @@ def drawEndgameMenu(displayX, displayY, displayW, displayH, startX, startY, star
         driverRatingSelect.isClicked(event2)
         closeButton.isClicked(event2)
         saveAndReturn.isClicked(event2)
+
+        # text handler
+        if inputActive == True:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_BACKSPACE:
+                    notes = notes[:-1]
+                elif event.key == pygame.K_RETURN:
+                    notes += "\n"
+                else:
+                    pass
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                # close notes box and stop keyboard input if clicked outside
+                inputActive = False
+            elif event.type == pygame.TEXTINPUT:
+                notes += event.text
+
+        #very necessary to have this after the check
+        notesBox.isClicked(event2)
 
     screen.fill(GRAY)
     endgameTowerSelect.draw(screen)
@@ -1164,6 +1206,7 @@ def drawEndgameMenu(displayX, displayY, displayW, displayH, startX, startY, star
     displayIntakeRate.draw(screen)
     displayDriverRate.draw(screen)
     saveAndReturn.draw(screen)
+    notesBox.draw(screen)
 
     if frames < 60:
         frames += 1
@@ -1178,3 +1221,26 @@ def drawEndgameMenu(displayX, displayY, displayW, displayH, startX, startY, star
         screen.blit(hugeFont.render(f'00:{remainingTime}', True, timerColor), (timeX2*xMult, timeY2*yMult))
     else:
         screen.blit(hugeFont.render(f'00:0{remainingTime}', True, timerColor), (timeX2*xMult, timeY2*yMult))
+
+    screen.blit(boldFont.render(renderedNotes, True, BLACK), ((noteX*xMult, noteY*yMult)))
+
+    if notes == '' and inputActive == False:
+        if thinDesc == True:
+            screen.blit(boldFont.render("Notes... (manually\npress enter for newline)", True, BLACK), ((noteX*xMult, noteY*yMult)))
+        else:
+            screen.blit(boldFont.render("Notes... (manually press enter for newline)", True, BLACK), ((noteX*xMult, noteY*yMult)))
+    else:
+        if inputActive:
+            #blinky cursor thingy
+            if (pygame.time.get_ticks() // 500) % 2 == 0:
+                renderedNotes = notes
+                renderedNotes += "|"
+            else:                 
+                renderedNotes = notes
+        else:
+            # get rid of it when not typing
+            renderedNotes = notes
+            if notes == '':
+                renderedNotes = ''
+
+# im tired boss
